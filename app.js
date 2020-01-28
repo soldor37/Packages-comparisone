@@ -1,5 +1,5 @@
-const http = require("http");
 const mysql = require("mysql2");
+require('dotenv').config();
 // получаем модуль Express
 const express = require("express");
 // создаем приложение
@@ -9,38 +9,54 @@ const app = express();
  * @type {Pool}
  */
 var db = null;
- 
-// http.createServer(router).listen(3000);
-// console.log('Server running on port 3000.');
-//------------------------------------------------//
 /**
  * @return {Pool}
  */
-function getConncetion() {
+function getConnection() {
     if (db === null) {
         db = mysql.createPool(getConfig())
     }
+    console.log('Connected to DB');
     return db;
 }
+module.exports.getConnection = getConnection();
 /**
  * @returns {Object}
  */
 function getConfig() {
     return {
-        host: 'localhost',
-        user: 'root',
-        password: 'admin',
-        database: 'mydb'
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASS,
+        database: process.env.DB_NAME
     };
 }
-app.get('/', function(req, res) {
-    res.sendfile('index.html');
+//Vue tables
+var hello = new Vue({ 
+    el: '#hello',
+    data: {
+        message: 'Hello Vue!'
+    }
   });
+  
+//Middlewares
+// app.use('/posts', () => {
+//     console.log('This is a middleware running');
+// });
 
+//Import Routes
+const postsRoute = require('./routes/posts');
+app.use('/posts', postsRoute);
+//ROUTES
+// app.get('/', function(req, res) {
+//     res.sendfile('index.html');
+//   });
   // запускаем сервер на порту 3000
 app.listen(3000);
 // отправляем сообщение
 console.log('Сервер стартовал!');
+
+
 // http.createServer(function(request,response){
 //     response.write("Hello world!");
 //     response.end();
