@@ -31,13 +31,7 @@ function getConfig() {
         database: process.env.DB_NAME
     };
 }
-//Vue tables
-var hello = new Vue({ 
-    el: '#hello',
-    data: {
-        message: 'Hello Vue!'
-    }
-  });
+
   
 //Middlewares
 // app.use('/posts', () => {
