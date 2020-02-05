@@ -4,6 +4,8 @@ require('dotenv').config();
 const express = require("express");
 // создаем приложение
 const app = express();
+var cors = require('cors')
+app.use(cors())
 
 /**
  * @type {Pool}
