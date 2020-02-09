@@ -3,12 +3,12 @@
     <b-container class="mt-2">
       <b-row>
         <b-col cols="4">
-          <b-form-select v-model="selectedPack1" :options="packages" class="mb-2"></b-form-select>
-          <b-form-select v-model="selectedPack2" :options="packages" class="mb-2"></b-form-select>
-          <b-button>Расчитать</b-button>
+          <b-form-select v-model="selectedPack1" :options="packages" value-field="idpack" text-field="pack_name" class="mb-2"></b-form-select>
+          <b-form-select v-model="selectedPack2" :options="packages" value-field="idpack" text-field="pack_name" class="mb-2"></b-form-select>
+          <b-button @click="calc();">Рассчитать</b-button>
         </b-col>
         <b-col cols="8">
-          <apexchart type="bar" :options="chart1.chartOptions" :series="chart1.series"></apexchart>
+          <apexchart type="bar" :options="chart1.chartOptions" :series="chart1.series" ></apexchart>
         </b-col>
       </b-row>
     </b-container>
@@ -24,21 +24,25 @@ export default {
   // },
   data() {
     return {
-      selectedPack1: null,
-      selectedPack2: null,
+      selectedPack1: 1,
+      selectedPack2: 2,
       chart1: {
         series: [
           {
-            name: "Net Profit",
-            data: [44, 55, 57, 56, 61, 58, 63, 60, 66]
+            name:"air",
+            data:[],
           },
           {
-            name: "Revenue",
-            data: [76, 85, 101, 98, 87, 105, 91, 114, 94]
+            name:"water",
+            data:[],
           },
           {
-            name: "Free Cash Flow",
-            data: [35, 41, 36, 26, 45, 48, 52, 53, 41]
+            name:"energy",
+            data:[],
+          },
+          {
+            name:"oil",
+            data:[],
           }
         ],
         chartOptions: {
@@ -62,15 +66,9 @@ export default {
           },
           xaxis: {
             categories: [
-              "Feb",
-              "Mar",
-              "Apr",
-              "May",
-              "Jun",
-              "Jul",
-              "Aug",
-              "Sep",
-              "Oct"
+              "plastic",
+              "glass",
+              "plastmass",
             ]
           },
           yaxis: {
@@ -112,11 +110,19 @@ export default {
     },
     calc() {
       var app = this;
+      let select = app.selectedPack1;
+      console.log(select);
       axios
-        .get("http://localhost:3000/calc")
+        .post("http://localhost:3000/posts/calc",{
+          params: {
+            ID : select
+          }
+        })
         .then(response => {
-          app.chart1.series = response.data.series;
-
+          app.chart1.series[0] = response.data;
+          app.chart1.series[1] = response.data;
+          app.chart1.series[2] = response.data;
+          app.chart1.series[3] = response.data;
         })
         .catch(error => {
           console.log("-----error-------");

@@ -1,12 +1,17 @@
 const mysql = require("mysql2");
 require('dotenv').config();
+const bodyParser = require("body-parser");
 // получаем модуль Express
 const express = require("express");
 // создаем приложение
 const app = express();
 var cors = require('cors')
 app.use(cors())
+app.use(express.json()) // for parsing application/json
+app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
+
+const urlencodedParser = bodyParser.urlencoded({extended: false});
 /**
  * @type {Pool}
  */
@@ -34,7 +39,8 @@ function getConfig() {
     };
 }
 
-  
+
+
 //Middlewares
 // app.use('/posts', () => {
 //     console.log('This is a middleware running');
@@ -43,6 +49,7 @@ function getConfig() {
 //Import Routes
 const postsRoute = require('./routes/posts');
 app.use('/posts', postsRoute);
+
 //ROUTES
 // app.get('/', function(req, res) {
 //     res.sendfile('index.html');
