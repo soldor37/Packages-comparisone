@@ -21,7 +21,7 @@ var db = null;
  */
 function getConnection() {
     if (db === null) {
-        db = mysql.createPool(getConfig())
+        db = mysql.createPool(getConfig()).promise();
     }
     console.log('Connected to DB');
     return db;

@@ -67,11 +67,11 @@ function calcFormula1(packid) {
     console.log(ObjectEcos.calculated);
 }
 //возвращает вторую формулу по выбранным упаковкам, перезаписывает объект с этими данными
-function calcFormula2(packid) {
+async function calcFormula2(packid) {
     for (let variable in packid){
         ObjectEcos.comparativeWeight = [];
         //console.log("упаковка -",packid[variable]);
-        getWeightMaterial(packid[variable]);
+      await getWeightMaterial(packid[variable]);
         var end_value = 0;
         ObjectEcos.weightMaterial.forEach(function (key) {
             var name = key.ecol_name;
@@ -103,13 +103,16 @@ function getWeightMaterial(idpack) {
     on
     ecol_charact.fk_id_material = material_weight.fk_id_material
     where
-    material_weight.fk_id_pack = `+ idpack, function (error, fields, result) {
-        if (error) {
-            throw error;
-        }
-        ObjectEcos.weightMaterial = fields;
-        console.log(ObjectEcos.weightMaterial)
-    });
+    material_weight.fk_id_pack = `+ idpack)
+    .then(result =>{
+        ObjectEcos.weightMaterial = result[0];
+      })
+      .then(result =>{
+        console.log(ObjectEcos.weightMaterial);
+      })
+      .catch(function(err) {
+        console.log(err.message);
+      });
 }
 
 // function getSettingsEco(packid) {
