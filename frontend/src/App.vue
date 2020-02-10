@@ -27,24 +27,7 @@ export default {
       selectedPack1: 1,
       selectedPack2: 2,
       chart1: {
-        series: [
-          {
-            name:"air",
-            data:[],
-          },
-          {
-            name:"water",
-            data:[],
-          },
-          {
-            name:"energy",
-            data:[],
-          },
-          {
-            name:"oil",
-            data:[],
-          }
-        ],
+        series: [],
         chartOptions: {
           chart: {
             type: "bar"
@@ -66,14 +49,15 @@ export default {
           },
           xaxis: {
             categories: [
-              "plastic",
-              "glass",
-              "plastmass",
+              "air",
+              "water",
+              "energy",
+              "oil"
             ]
           },
           yaxis: {
             title: {
-              text: "$ (thousands)"
+              text: "Measure"
             }
           },
           fill: {
@@ -110,7 +94,7 @@ export default {
     },
     calc() {
       var app = this;
-      let select = app.selectedPack1;
+      let select = [app.selectedPack1, app.selectedPack2];
       console.log(select);
       axios
         .post("http://localhost:3000/posts/calc",{
