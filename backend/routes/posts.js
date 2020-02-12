@@ -34,7 +34,6 @@ router.post('/calc', function (req, res) {
             calcFormula2(packid);
         })
         .then(result => {
-            
             res.send(ObjectEcos.calculated);
             resolve();
         })
@@ -49,7 +48,16 @@ var ObjectEcos = {
     eco: [],
     weightMaterial: [],
     calculated: [],
-    comparativeWeight: []
+    comparativeWeight: [],
+}
+var ObjectGraph = {
+    idpack : 0,
+    data : {
+        air: 0,
+        water: 0,
+        energy: 0,
+        oil: 0
+    }
 }
 //возвращает первую формулу по одной упаковке, перезаписывает объект с этими данными
 async function calcFormula2(packid) {
@@ -75,27 +83,21 @@ async function calcFormula2(packid) {
         //ObjectEcos.calculated[variable][name] = Number(ObjectEcos.calculated[variable][name]) / Number(ObjectEcos.comparativeWeight[name]); 
     })
     }
-    for (let variable in packid){
-        await getWeightMaterial(packid[variable]);
-        var end_value = 0;
-        ObjectEcos.weightMaterial.forEach(function (key) {
-        var name = key.ecol_name;
-        var weight = key.material_weight;
-        var value = key.ecol_value;
-        end_value = value * weight;
-        
-        if(typeof  ObjectEcos.calculated[variable] == 'undefined') 
-        {
-            ObjectEcos.calculated[variable] = [];
+    for (key in ObjectEcos.calculated){
+        for (let name in ObjectEcos.calculated[key]){
+            ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]); 
+            ObjectGraph.data = ObjectEcos.calculated[key][name]; 
         }
-        if(typeof  ObjectEcos.calculated[variable][name] == 'undefined') 
-        {
-            ObjectEcos.calculated[variable][name] = 0;
+    }
+
+
+
+    for (key in ObjectGraph){
+        for (let name in ObjectGraph[key]){
+            console.log(name)
+            // ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]); 
+            // ObjectGraph.data = ObjectEcos.calculated[key][name]; 
         }
-        //ObjectEcos.calculated[variable][name] += Number(end_value);
-        console.log(ObjectEcos.calculated[variable][name])
-        ObjectEcos.calculated[variable][name] = Number(ObjectEcos.calculated[variable][name]) / Number(ObjectEcos.comparativeWeight[name]); 
-    })
     }
     console.log(ObjectEcos.calculated);
 }
