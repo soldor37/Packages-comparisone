@@ -50,15 +50,8 @@ var ObjectEcos = {
     calculated: [],
     comparativeWeight: [],
 }
-var ObjectGraph = {
-    idpack : 0,
-    data : {
-        air: 0,
-        water: 0,
-        energy: 0,
-        oil: 0
-    }
-}
+var ObjectGraph = []
+
 //возвращает первую формулу по одной упаковке, перезаписывает объект с этими данными
 async function calcFormula2(packid) {
     ObjectEcos.calculated = [];
@@ -84,21 +77,29 @@ async function calcFormula2(packid) {
     })
     }
     for (key in ObjectEcos.calculated){
+        //ObjectGraph.idpack = Number(key); //
         for (let name in ObjectEcos.calculated[key]){
-            ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]); 
-            ObjectGraph.data = ObjectEcos.calculated[key][name]; 
+            ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]);
+            // if(typeof  ObjectGraph.data == 'undefined') //
+            // {
+            //     ObjectGraph.data = [];//
+            // }
+            // if(typeof  ObjectGraph.data[name] == 'undefined') //
+            // {
+            //     ObjectGraph.data[name] = 0;//
+            // }
+            // ObjectGraph.data = ObjectEcos.calculated[key]; //
         }
     }
 
-
-
-    for (key in ObjectGraph){
-        for (let name in ObjectGraph[key]){
-            console.log(name)
-            // ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]); 
-            // ObjectGraph.data = ObjectEcos.calculated[key][name]; 
-        }
-    }
+    // for (key in ObjectGraph){
+    //     ObjectGraph.idpack = 1;
+    //     // for (let name in ObjectGraph[key]){
+    //     //     // ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]); 
+    //     //     // ObjectGraph.data = ObjectEcos.calculated[key][name]; 
+    //     // }
+    // }
+    console.log(ObjectGraph);
     console.log(ObjectEcos.calculated);
 }
 //Сумма значений экол характеристик для значенателя второй формулы
