@@ -27,7 +27,7 @@ export default {
       selectedPack1: 1,
       selectedPack2: 2,
       chart1: {
-        series: [],
+        series:[],
         chartOptions: {
           chart: {
             type: "bar"
@@ -103,10 +103,7 @@ export default {
           }
         })
         .then(response => {
-          app.chart1.series[0] = response.data;
-          app.chart1.series[1] = response.data;
-          app.chart1.series[2] = response.data;
-          app.chart1.series[3] = response.data;
+          app.chart1.series = response.data;
         })
         .catch(error => {
           console.log("-----error-------");

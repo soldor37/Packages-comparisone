@@ -34,7 +34,8 @@ router.post('/calc', function (req, res) {
             calcFormula2(packid);
         })
         .then(result => {
-            res.send(ObjectEcos.calculated);
+            console.log(ObjectGraph);
+            res.send(ObjectGraph);
             resolve();
         })
         .catch(function(err){
@@ -50,12 +51,22 @@ var ObjectEcos = {
     calculated: [],
     comparativeWeight: [],
 }
-var ObjectGraph = []
+var ObjectGraph = [];
 
 //возвращает первую формулу по одной упаковке, перезаписывает объект с этими данными
 async function calcFormula2(packid) {
     ObjectEcos.calculated = [];
+    ObjectGraph = [];
     for (let variable in packid){
+        if(typeof  ObjectGraph[variable] == 'undefined') 
+        {
+            ObjectGraph[variable] = {};
+        }
+        if(typeof  ObjectGraph[variable].idpack == 'undefined') 
+        {
+            ObjectGraph[variable].idpack = 0;
+        }
+        ObjectGraph[variable].idpack = packid[variable];
         await getWeightMaterial(packid[variable]);
         var end_value = 0;
         ObjectEcos.weightMaterial.forEach(function (key) {
@@ -77,7 +88,6 @@ async function calcFormula2(packid) {
     })
     }
     for (key in ObjectEcos.calculated){
-        //ObjectGraph.idpack = Number(key); //
         for (let name in ObjectEcos.calculated[key]){
             ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]);
             // if(typeof  ObjectGraph.data == 'undefined') //
@@ -89,18 +99,16 @@ async function calcFormula2(packid) {
             //     ObjectGraph.data[name] = 0;//
             // }
             // ObjectGraph.data = ObjectEcos.calculated[key]; //
+            if(typeof  ObjectGraph[key].data == 'undefined') 
+            {
+                ObjectGraph[key].data = [];
+            }
+            ObjectGraph[key].data.push(ObjectEcos.calculated[key][name]);
         }
+        
     }
-
-    // for (key in ObjectGraph){
-    //     ObjectGraph.idpack = 1;
-    //     // for (let name in ObjectGraph[key]){
-    //     //     // ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]); 
-    //     //     // ObjectGraph.data = ObjectEcos.calculated[key][name]; 
-    //     // }
-    // }
-    console.log(ObjectGraph);
-    console.log(ObjectEcos.calculated);
+    //console.log(ObjectGraph);
+    //console.log(ObjectEcos.calculated);
 }
 //Сумма значений экол характеристик для значенателя второй формулы
 async function calcFormula1(packid) {
