@@ -28,48 +28,81 @@ router.get('/', function (req, res) {
 
 router.post('/calc', function (req, res) {
     let packid = req.body.params.ID;
-    // for (let variable in packid){
-    //     calcFormula1(packid[variable]);
-    // }
-    calcFormula2(packid);
-    //res.send(ObjectEcos.calculated);
-    res.send(ObjectEcos.comparativeWeight);
+    return new Promise((resolve, reject) => {
+        calcFormula1(packid)
+        .then(result =>{
+            calcFormula2(packid);
+        })
+        .then(result => {
+            
+            res.send(ObjectEcos.calculated);
+            resolve();
+        })
+        .catch(function(err){
+            console.log(err.message);
+            reject();
+        })
+    });
+    
 });
 var ObjectEcos = {
     eco: [],
     weightMaterial: [],
-    calculated: 0,
+    calculated: [],
     comparativeWeight: []
 }
 //возвращает первую формулу по одной упаковке, перезаписывает объект с этими данными
-function calcFormula1(packid) {
+async function calcFormula2(packid) {
     ObjectEcos.calculated = [];
-    ObjectEcos.comparativeWeight = [];
-    getSettingsEco(packid);
-    getWeightMaterial(packid);
-    var end_value = 0;
-
-    ObjectEcos.weightMaterial.forEach(function (key) {
-        var pack = key.fk_id_pack;
+    for (let variable in packid){
+        await getWeightMaterial(packid[variable]);
+        var end_value = 0;
+        ObjectEcos.weightMaterial.forEach(function (key) {
         var name = key.ecol_name;
         var weight = key.material_weight;
         var value = key.ecol_value;
         end_value = value * weight;
         
-        if(typeof  ObjectEcos.calculated[name] == 'undefined') 
+        if(typeof  ObjectEcos.calculated[variable] == 'undefined') 
         {
-            ObjectEcos.calculated[name] = 0;
+            ObjectEcos.calculated[variable] = [];
         }
-        
-        ObjectEcos.calculated[name] += Number(end_value);
-        
+        if(typeof  ObjectEcos.calculated[variable][name] == 'undefined') 
+        {
+            ObjectEcos.calculated[variable][name] = 0;
+        }
+        ObjectEcos.calculated[variable][name] += Number(end_value);
+        //ObjectEcos.calculated[variable][name] = Number(ObjectEcos.calculated[variable][name]) / Number(ObjectEcos.comparativeWeight[name]); 
     })
+    }
+    for (let variable in packid){
+        await getWeightMaterial(packid[variable]);
+        var end_value = 0;
+        ObjectEcos.weightMaterial.forEach(function (key) {
+        var name = key.ecol_name;
+        var weight = key.material_weight;
+        var value = key.ecol_value;
+        end_value = value * weight;
+        
+        if(typeof  ObjectEcos.calculated[variable] == 'undefined') 
+        {
+            ObjectEcos.calculated[variable] = [];
+        }
+        if(typeof  ObjectEcos.calculated[variable][name] == 'undefined') 
+        {
+            ObjectEcos.calculated[variable][name] = 0;
+        }
+        //ObjectEcos.calculated[variable][name] += Number(end_value);
+        console.log(ObjectEcos.calculated[variable][name])
+        ObjectEcos.calculated[variable][name] = Number(ObjectEcos.calculated[variable][name]) / Number(ObjectEcos.comparativeWeight[name]); 
+    })
+    }
     console.log(ObjectEcos.calculated);
 }
-//возвращает вторую формулу по выбранным упаковкам, перезаписывает объект с этими данными
-async function calcFormula2(packid) {
+//Сумма значений экол характеристик для значенателя второй формулы
+async function calcFormula1(packid) {
+    ObjectEcos.comparativeWeight = [];
     for (let variable in packid){
-        ObjectEcos.comparativeWeight = [];
         //console.log("упаковка -",packid[variable]);
       await getWeightMaterial(packid[variable]);
         var end_value = 0;
@@ -87,32 +120,35 @@ async function calcFormula2(packid) {
             ObjectEcos.comparativeWeight[name] += Number(end_value);
             
         })
-        console.log("Добавили в структуру такую вот фигню -",ObjectEcos.comparativeWeight);
+        //console.log("Добавили в структуру такую вот фигню -",ObjectEcos.comparativeWeight);
     }
-    
 }
 
 function getWeightMaterial(idpack) {
-    console.log("За инфой Пришла пачка -",idpack);
-    connection.getConnection.query(`SELECT
-    material_weight.fk_id_material, ecol_name, ecol_value, material_weight
-    FROM
-    mydb.ecol_charact
-    inner join
-    material_weight
-    on
-    ecol_charact.fk_id_material = material_weight.fk_id_material
-    where
-    material_weight.fk_id_pack = `+ idpack)
-    .then(result =>{
-        ObjectEcos.weightMaterial = result[0];
-      })
-      .then(result =>{
-        console.log(ObjectEcos.weightMaterial);
-      })
-      .catch(function(err) {
-        console.log(err.message);
-      });
+    return new Promise((resolve, reject) => {
+        //console.log("За инфой Пришла пачка -",idpack);
+        connection.getConnection.query(`SELECT
+        material_weight.fk_id_material, ecol_name, ecol_value, material_weight, fk_id_pack
+        FROM
+        mydb.ecol_charact
+        inner join
+        material_weight
+        on
+        ecol_charact.fk_id_material = material_weight.fk_id_material
+        where
+        material_weight.fk_id_pack = `+ idpack)
+        .then(result =>{
+            ObjectEcos.weightMaterial = result[0];
+          })
+          .then(result =>{
+            //console.log(ObjectEcos.weightMaterial);
+            resolve();
+          })
+          .catch(function(err) {
+            console.log(err.message);
+            reject();
+          });
+    });
 }
 
 // function getSettingsEco(packid) {
