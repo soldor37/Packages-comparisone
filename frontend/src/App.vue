@@ -1,11 +1,23 @@
 <template>
+<div>
+  <div id="menu" class="mt-1" md="3">
+    <b-row class="text-center">
+      <b-col>
+      <b-button-group size="lg">
+      <b-button>Database</b-button>
+      <b-button>Button 2</b-button>
+      <b-button>Button 3</b-button>
+    </b-button-group>
+        </b-col>
+      </b-row>
+  </div>
   <div id="app">
     <b-container class="mt-2">
       <b-row>
         <b-col cols="4">
           <b-form-select v-model="selectedPack1" :options="packages" value-field="idpack" text-field="pack_name" class="mb-2"></b-form-select>
           <b-form-select v-model="selectedPack2" :options="packages" value-field="idpack" text-field="pack_name" class="mb-2"></b-form-select>
-          <b-button @click="calc();">Рассчитать</b-button>
+          <b-button @click="calc();">Calculate</b-button>
         </b-col>
         <b-col cols="8">
           <apexchart type="bar" :options="chart1.chartOptions" :series="chart1.series" ></apexchart>
@@ -13,6 +25,7 @@
       </b-row>
     </b-container>
   </div>
+</div>
 </template>
 
 <script>
@@ -30,18 +43,39 @@ export default {
         series:[],
         chartOptions: {
           chart: {
-            type: "bar"
+            type: "bar"            
+          },
+          //TODO: вывод названия упаковки
+          legend: {
+            show: true,
+            formatter: function(seriesName, opts) {
+              return seriesName
+            }
           },
           plotOptions: {
             bar: {
+              dataLabels: {
+                position: 'center'
+              },
               horizontal: false,
               columnWidth: "95%",
               // endingShape: "rounded"
-            }
+            },
           },
           dataLabels: {
-            enabled: true
-          },
+              enabled: true,
+              dropShadow: {
+                  enabled: true,
+                  left: 2,
+                  top: 2,
+                  opacity: 0.5
+              },
+              style: {
+                fontSize: '18px',
+                //colors: ['#333']
+              },
+              
+            },
           stroke: {
             show: true,
             width: 4,
@@ -49,15 +83,19 @@ export default {
           },
           xaxis: {
             categories: [
-              "air",
-              "water",
-              "energy",
-              "oil"
+              "air, m^2",
+              "water, l",
+              "energy, MJ",
+              "oil consumption, l"
             ]
           },
           yaxis: {
             title: {
-              text: "Measure"
+              text: "Relative values of environmental characteristics",
+              style: {
+                fontSize: '15px',
+                //colors: ['#333']
+              },
             }
           },
           fill: {
@@ -66,7 +104,7 @@ export default {
           tooltip: {
             y: {
               formatter: function(val) {
-                return "$ " + val + " thousands";
+                return Number(val).toFixed(2);
               }
             }
           }
@@ -88,6 +126,7 @@ export default {
           app.packages = response.data;
         })
         .catch(error => {
+          alert(error + "\n Ошибка подключения к базе данных");
           console.log("-----error-------");
           console.log(error);
         });

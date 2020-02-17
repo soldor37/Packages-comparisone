@@ -9,7 +9,7 @@ var cors = require('cors')
 app.use(cors())
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
-
+app.set("view engine", "hbs");
 
 const urlencodedParser = bodyParser.urlencoded({extended: false});
 /**
@@ -41,25 +41,25 @@ function getConfig() {
 
 
 
-//Middlewares
-// app.use('/posts', () => {
-//     console.log('This is a middleware running');
-// });
+
 
 //Import Routes
 const postsRoute = require('./routes/posts');
 app.use('/posts', postsRoute);
-
-//ROUTES
-// app.get('/', function(req, res) {
-//     res.sendfile('index.html');
-//   });
-  // запускаем сервер на порту 3000
+// запускаем сервер на порту 3000
 app.listen(3000);
 // отправляем сообщение
 console.log('Сервер стартовал!');
 
-
+// получение списка пользователей
+app.get("/packs", function(req, res){
+    getConnection().query("SELECT * FROM packaging", function(err, data) {
+      if(err) return console.log(err);
+      res.render("index.hbs", {
+          packs: data
+      });
+    });
+});
 // http.createServer(function(request,response){
 //     response.write("Hello world!");
 //     response.end();

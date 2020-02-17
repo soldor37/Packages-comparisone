@@ -3,62 +3,30 @@ const connection = require('../app');
 const router = express.Router();
 
 router.get('/', function (req, res) {
-    // var packs = [
-    //     { value: null, text: 'Выберите упаковку'},
-    //     { "value": 1, "text": "test1" },
-    //     { "value": 2, "text": "test2" },
-    //     { "value": 3, "text": "test3" },
-    // ];
-    // console.log(packs);
-    // res.send(JSON.stringify(packs));
     connection.getConnection.query("SELECT idpack, pack_name FROM packaging", function (err, data) {
         if (err) return console.log(err);
         res.send(data);
     });
-    //код ниже для изменения в бд таблиц https://metanit.com/web/nodejs/8.6.php
-    // connection.getConnection.query("SELECT * FROM packaging", function(err, data) {
-    //     if(err) return console.log(err);
-    //     res.render("index.hbs", {
-    //         packs: data
-    //     });
-
-    //   });
 });
 
 
 router.post('/calc', function (req, res) {
     let packid = req.body.params.ID;
-    // new Promise((resolve, reject) => {
-    //     calcFormula1(packid)
-    //     .then(result =>{
-    //         calcFormula2(packid);
-            
-    //     })
-    //     .then(result => {
-    //         console.log(ObjectGraph);
-    //         res.send(ObjectGraph);  
-    //         resolve();
-    //     })
-    //     .catch(function(err){
-    //         console.log(err.message);
-    //         reject();
-    //     })
-    // });
     (async () => {
-        await askMom(packid);
+        await calculation(packid);
         res.send(ObjectGraph);
     })();
         
 });
 var ObjectEcos = {
-    eco: [],
+    packs: [],
     weightMaterial: [],
     calculated: [],
     comparativeWeight: [],
 }
 var ObjectGraph = [];
 
-async function askMom(packid) {
+async function calculation(packid) {
     try {
        await calcFormula1(packid);
        await calcFormula2(packid);      
@@ -76,11 +44,12 @@ async function calcFormula2(packid) {
         {
             ObjectGraph[variable] = {};
         }
-        if(typeof  ObjectGraph[variable].idpack == 'undefined') 
+        if(typeof  ObjectGraph[variable].name == 'undefined') 
         {
-            ObjectGraph[variable].idpack = 0;
+            ObjectGraph[variable].name = 0;
         }
-        ObjectGraph[variable].idpack = packid[variable];
+        await getPacks(packid[variable]);
+        ObjectGraph[variable].name = ObjectEcos.packs[0].pack_name;
         await getWeightMaterial(packid[variable]);
         var end_value = 0;
         ObjectEcos.weightMaterial.forEach(function (key) {
@@ -98,7 +67,6 @@ async function calcFormula2(packid) {
             ObjectEcos.calculated[variable][name] = 0;
         }
         ObjectEcos.calculated[variable][name] += Number(end_value);
-        //ObjectEcos.calculated[variable][name] = Number(ObjectEcos.calculated[variable][name]) / Number(ObjectEcos.comparativeWeight[name]); 
     })
     }
     for (key in ObjectEcos.calculated){
@@ -108,15 +76,16 @@ async function calcFormula2(packid) {
             {
                 ObjectGraph[key].data = [];
             }
-            ObjectGraph[key].data.push(ObjectEcos.calculated[key][name]);
+            ObjectGraph[key].data.push((Number(ObjectEcos.calculated[key][name])).toFixed(3));
         }
         
     }
-    //console.log(ObjectGraph);
-    return Promise.resolve(ObjectGraph);
+    console.log(ObjectGraph);
     //console.log(ObjectEcos.calculated);
+    return Promise.resolve(ObjectGraph);
+    
 }
-//Сумма значений экол характеристик для значенателя второй формулы
+//Считает сумму абсолютных значений экологических характеристик выбранных упаковок для значенателя второй формулы
  async function calcFormula1(packid) {
             ObjectEcos.comparativeWeight = [];
             for (let variable in packid){
@@ -166,6 +135,23 @@ async function getWeightMaterial(idpack) {
     });
 }
 
+async function getPacks(idpack) {
+    return new Promise((resolve, reject) => {
+        //console.log("За инфой Пришла пачка -",idpack);
+        connection.getConnection.query(`SELECT idpack, pack_name FROM packaging WHERE idpack =` + idpack)
+        .then(result =>{
+            ObjectEcos.packs = result[0];
+          })
+          .then(result =>{
+            console.log(ObjectEcos.packs);
+            resolve(ObjectEcos.packs);
+          })
+          .catch(function(err) {
+            console.log(err.message);
+            reject();
+          });
+    });
+}
 // function getSettingsEco(packid) {
 //     connection.getConnection.query(`SELECT 
 //     *
@@ -205,37 +191,39 @@ async function getWeightMaterial(idpack) {
 //     });
 
 // });
-router.get('/packmaterialweight', function (req, res) {
-    connection.getConnection.query(`SELECT 
-    pack_name, material_name, material_weight
-FROM
-    materials
-        LEFT JOIN
-    material_weight ON fk_id_material = idmaterials
-        LEFT JOIN
-    packaging ON idpack = fk_id_pack`, function (error, fields, result) {
-        if (error) {
-            throw error;
-        }
-        const packs = fields;
-        res.send(JSON.stringify(packs));
-    });
-});
 
-router.get('/packmaterialecol', function (req, res) {
-    connection.getConnection.query(`SELECT 
-    *
-FROM
-    ecol_charact,
-    materials,
-    packaging
-WHERE
-    fk_id_material = idmaterials;`, function (error, fields, result) {
-        if (error) {
-            throw error;
-        }
-        const packs = fields;
-        res.send(JSON.stringify(packs));
-    });
-});
+// router.get('/packmaterialweight', function (req, res) {
+//     connection.getConnection.query(`SELECT 
+//     pack_name, material_name, material_weight
+// FROM
+//     materials
+//         LEFT JOIN
+//     material_weight ON fk_id_material = idmaterials
+//         LEFT JOIN
+//     packaging ON idpack = fk_id_pack`, function (error, fields, result) {
+//         if (error) {
+//             throw error;
+//         }
+//         const packs = fields;
+//         res.send(JSON.stringify(packs));
+//     });
+// });
+
+// router.get('/packmaterialecol', function (req, res) {
+//     connection.getConnection.query(`SELECT 
+//     *
+// FROM
+//     ecol_charact,
+//     materials,
+//     packaging
+// WHERE
+//     fk_id_material = idmaterials;`, function (error, fields, result) {
+//         if (error) {
+//             throw error;
+//         }
+//         const packs = fields;
+//         res.send(JSON.stringify(packs));
+//     });
+// });
+
 module.exports = router;
