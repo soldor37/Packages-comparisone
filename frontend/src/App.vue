@@ -50,7 +50,8 @@ export default {
             show: true,
             formatter: function(seriesName, opts) {
               return seriesName
-            }
+            },
+            fontSize: '16px'
           },
           plotOptions: {
             bar: {
