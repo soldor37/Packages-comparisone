@@ -9,6 +9,29 @@ router.get('/', function (req, res) {
     });
 });
 
+router.post('/insert', function (req, res) {
+    //console.log(req.body)
+    connection.getConnection.query(`INSERT INTO packaging(idpack, pack_name) VALUES(?,?)`,[req.body.idpack,req.body.pack_name], function (err, data) {
+        if (err) return console.log(err);
+    });
+    res.send('Data insert received')
+});
+
+router.post('/delete', function (req, res) {
+    //console.log(req.body)
+    connection.getConnection.query(`DELETE FROM packaging WHERE (idpack = ?)`,[req.body.idpack], function (err, data) {
+        if (err) return console.log(err);
+    });
+    res.send('Data delete received')
+});
+
+router.post('/edit', function (req, res) {
+    //console.log(req.body)
+    connection.getConnection.query(`UPDATE packaging SET pack_name = ? WHERE (idpack = ?)`,[req.body.pack_name,req.body.idpack], function (err, data) {
+        if (err) return console.log(err);
+    });
+    res.send('Data delete received')
+});
 
 router.post('/calc', function (req, res) {
     let packid = req.body.params.ID;
