@@ -13,6 +13,7 @@ import VueApexCharts from 'vue-apexcharts'
 // импортируем AdminPanel компонент
 import AdminPanel from './components/AdminPanel'
 import Comparisone from './components/Comparisone'
+import vuetify from './plugins/vuetify';
 Vue.component('apexchart', VueApexCharts)
 
 
@@ -26,14 +27,9 @@ const router = new VueRouter({
   routes,
   mode: 'history'
 })
-// Создаем экземпляр vue
+
 new Vue({
-  // Определяем селектор для корневого компонента
-    el: '#app',
-    // передаем шаблон корневому компаненту
-    template: '<App/>',
-    // Объявляем компоненты, к которым может обращаться корневой компонент;
-    components: { App },
-    // Передаем в роутер экземпляр Vue
-    router
-  }).$mount('#app')
+    vuetify,
+    router,
+    render: h => h(App),
+}).$mount('#app')

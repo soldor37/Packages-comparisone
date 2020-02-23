@@ -32,12 +32,25 @@ export default {
         series:[],
         chartOptions: {
           chart: {
-            type: "bar"            
+            type: "bar",
+            animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+            enabled: false,
+            delay: 150
+        },
+        dynamicAnimation: {
+            enabled: true,
+            speed: 350
+        }
+    }            
           },
           //TODO: вывод названия упаковки
           legend: {
             show: true,
-            formatter: function(seriesName, opts) {
+            formatter: function(seriesName) {
               return seriesName
             },
             fontSize: '16px'

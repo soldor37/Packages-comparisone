@@ -1,39 +1,52 @@
 {
-  "name": "diplom",
-  "description": "yes",
-  "version": "1.0.0",
-  "author": "soldor37",
-  "license": "MIT",
+  "name": "app",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "apexcharts": "^3.15.5",
+    "@mdi/font": "^4.9.95",
+    "apexcharts": "^3.15.6",
+    "axios": "^0.19.2",
     "bootstrap": "^4.4.1",
-    "bootstrap-vue": "^2.4.0",
-    "vue": "^2.5.11",
+    "bootstrap-vue": "^2.5.0",
+    "core-js": "^3.6.4",
+    "jquery": "^3.4.1",
+    "vue": "^2.6.11",
     "vue-apexcharts": "^1.5.2",
-    "vue-router": "^3.1.5"
+    "vue-router": "^3.1.5",
+    "vuetify": "^2.2.14"
+  },
+  "devDependencies": {
+    "@mdi/js": "^4.9.95",
+    "@vue/cli-plugin-babel": "^4.2.0",
+    "@vue/cli-plugin-eslint": "^4.2.0",
+    "@vue/cli-service": "^4.2.0",
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.1.2",
+    "material-design-icons-iconfont": "^5.0.1",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
+    "rules": {}
   },
   "browserslist": [
     "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
-  ],
-  "devDependencies": {
-    "axios": "^0.19.2",
-    "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
-    "babel-preset-env": "^1.6.0",
-    "babel-preset-stage-3": "^6.24.1",
-    "cross-env": "^5.0.5",
-    "css-loader": "^0.28.7",
-    "file-loader": "^1.1.4",
-    "vue-loader": "^13.0.5",
-    "vue-template-compiler": "^2.4.4",
-    "webpack": "^3.6.0",
-    "webpack-dev-server": "^2.9.1"
-  }
+    "last 2 versions"
+  ]
 }
