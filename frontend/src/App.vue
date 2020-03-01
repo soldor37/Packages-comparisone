@@ -39,6 +39,14 @@
             <v-list-item-title class="title"><router-link to="/AdminPanel" tag="nav">Database</router-link></v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+        <v-list-item link>
+          <v-list-item-action>
+            <v-icon>mdi-database-edit</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title class="title">Logout</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
@@ -77,12 +85,30 @@
 
 <script>
   export default {
-    props: {
-      source: String,
-    },
     data: () => ({
       drawer: null,
     }),
+    computed : {
+      isLoggedIn : function(){ return this.$store.getters.isLoggedIn}
+    },
+    methods: {
+      logout: function () {
+        this.$store.dispatch('logout')
+        .then(() => {
+          this.$router.push('/login')
+        })
+      }
+    },
+    created: function () {
+    this.$http.interceptors.response.use(undefined, function (err) {
+      return new Promise(function () {
+        if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
+          this.$store.dispatch("logout")
+        }
+        throw err;
+      });
+    });
+  }
   }
 </script>
 <style>

@@ -30,7 +30,7 @@ router.post('/edit', function (req, res) {
     connection.getConnection.query(`UPDATE packaging SET pack_name = ? WHERE (idpack = ?)`,[req.body.pack_name,req.body.idpack], function (err, data) {
         if (err) return console.log(err);
     });
-    res.send('Data delete received')
+    res.send('Data edit received')
 });
 
 router.post('/calc', function (req, res) {

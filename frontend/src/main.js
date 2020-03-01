@@ -12,15 +12,34 @@ import VueRouter from 'vue-router'
 import VueApexCharts from 'vue-apexcharts'
 // импортируем AdminPanel компонент
 import AdminPanel from './components/AdminPanel'
+// импортируем Comparisone компонент
 import Comparisone from './components/Comparisone'
+// импортируем Login компонент
+import Login from './components/Login'
+import store from './store.js'
+import Axios from 'axios'
 import vuetify from './plugins/vuetify';
 Vue.component('apexchart', VueApexCharts)
-
-
+//работаем с авторизацией
+Vue.prototype.$http = Axios;
+const token = localStorage.getItem('token')
+if (token) {
+  Vue.prototype.$http.defaults.headers.common['Authorization'] = token
+}
 // инициализируем роуты
 const routes = [
-  { path: '/AdminPanel', component: AdminPanel },
-  { path: '/', component: Comparisone }
+  { 
+    path: '/AdminPanel',
+    component: AdminPanel,
+    meta: { 
+    requiresAuth: true,
+    is_admin: true
+    } 
+  },
+  { path: '/', component: Comparisone },
+  { path : '/login', component: Login },
+  // otherwise redirect to home
+  { path: '*', redirect: '/' }
   ]
 // Создаем экземпляр роутера и передайте опцию `routes`
 const router = new VueRouter({
@@ -28,8 +47,20 @@ const router = new VueRouter({
   mode: 'history'
 })
 
+router.beforeEach((to, from, next) => {
+  if(to.matched.some(record => record.meta.requiresAuth)) {
+    if (store.getters.isLoggedIn) {
+      next()
+      return
+    }
+    next('/login') 
+  } else {
+    next() 
+  }
+})
 new Vue({
     vuetify,
     router,
+    store,
     render: h => h(App),
 }).$mount('#app')
