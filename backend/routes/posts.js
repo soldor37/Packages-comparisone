@@ -1,7 +1,51 @@
 const express = require('express');
 const connection = require('../app');
 const router = express.Router();
+//TODO: перенести в app.js
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const config = require('../config')
 
+async function selectByLogin(login) {
+    return new Promise((resolve, reject) => {
+        connection.getConnection.query(`SELECT * FROM users WHERE login = ?`, login)
+        .then(result =>{
+            ObjectUsers = [];
+            ObjectUsers = result[0];
+            resolve(ObjectUsers)
+          })
+          .catch(function(err) {
+            console.log(err.message);
+          });
+    });
+}
+//аутонтификация по логину и паролю
+router.post('/login', (req, res) => {
+    (async () => {
+        await selectByLogin(req.body.login)
+        console.log(req.body.password, ObjectUsers[0].password)
+        let passwordIsValid = bcrypt.compareSync(req.body.password, ObjectUsers[0].password);
+        //let passwordIsValid = bcrypt.compareSync(req.body.password, bcrypt.hashSync(ObjectUsers[0].password,8));
+        //let passwordIsValid = (bcrypt.hashSync(req.body.password,8) == ObjectUsers[0].password)
+        console.log(bcrypt.hashSync(req.body.password,8))
+        console.log(passwordIsValid)
+        if (!passwordIsValid)return res.status(401).send({ auth: false, token: null });
+        let token = jwt.sign({ id: ObjectUsers[0].id }, config.secret, { expiresIn: 1 // expires in 24 hours
+        });
+        res.status(200).send({ auth: true, token: token, user: ObjectUsers[0] });
+    })();
+        
+})
+
+router.get('/users', function (req, res) {
+    connection.getConnection.query("SELECT * FROM users WHERE login = 'admin'", function (err, data) {
+        if (err) return console.log(err);
+        res.send(data);
+    });
+});
+let ObjectUsers = [];
+
+//---------------работа с упаковками------------------
 router.get('/', function (req, res) {
     connection.getConnection.query("SELECT idpack, pack_name FROM packaging", function (err, data) {
         if (err) return console.log(err);
