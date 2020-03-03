@@ -32,7 +32,7 @@
             <v-list-item-title class="title"><router-link to="/" tag="nav">Comparisone</router-link></v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item link>
+        <v-list-item link v-if="is_admin == 1">
           <v-list-item-action>
             <v-icon>mdi-database-edit</v-icon>
           </v-list-item-action>
@@ -40,7 +40,7 @@
             <v-list-item-title class="title"><router-link to="/AdminPanel" tag="nav">Database</router-link></v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-      </v-list>
+       </v-list>
     </v-navigation-drawer>
 
     <v-app-bar
@@ -51,12 +51,12 @@
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title>Application</v-toolbar-title>
 <v-spacer></v-spacer>
-      <v-btn class="ma-2" tag="loginbtm" color="primary" to="/login" v-if="!isLoggedIn"> 
+      <v-btn class="ma-2" color="primary" to="/login" v-if="!isLoggedIn"> 
         Login
         <v-icon>mdi-login-variant</v-icon>
       </v-btn>
 
-      <v-btn class="ma-2" tag="loginbtm" color="primary" v-if="isLoggedIn" @click="logout">
+      <v-btn class="ma-2" color="primary" v-if="isLoggedIn" @click="logout">
         Logout
         <v-icon>mdi-logout</v-icon>
       </v-btn>
@@ -90,11 +90,19 @@
   export default {
     data: () => ({
       drawer: null,
+      is_admin: null,
     }),
     computed : {
-      isLoggedIn : function(){ return this.$store.getters.isLoggedIn}
+      isLoggedIn : function(){
+        this.isAdmin();
+         return this.$store.getters.isLoggedIn
+         },
     },
     methods: {
+      isAdmin: function () {
+        console.log(localStorage)
+        this.is_admin = localStorage.is_admin;
+      },
       logout: function () {
         this.$store.dispatch('logout')
         .then(() => {
@@ -111,7 +119,7 @@
         throw err;
       });
     });
-  }
+  },
   }
 </script>
 <style>

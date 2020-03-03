@@ -26,7 +26,7 @@ router.post('/login', (req, res) => {
         let passwordIsValid = bcrypt.compareSync(req.body.password, ObjectUsers[0].password);
         //console.log(bcrypt.hashSync(req.body.password,8))
         if (!passwordIsValid)return res.status(401).send({ auth: false, token: null });
-        let token = jwt.sign({ id: ObjectUsers[0].id }, config.secret, { expiresIn: 1 // expires in 24 hours
+        let token = jwt.sign({ id: ObjectUsers[0].id }, config.secret, { expiresIn: 86400 // expires in 24 hours
         });
         res.status(200).send({ auth: true, token: token, user: ObjectUsers[0] });
     })();

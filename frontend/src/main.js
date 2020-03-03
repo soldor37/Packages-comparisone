@@ -31,6 +31,7 @@ const routes = [
   { 
     path: '/AdminPanel',
     component: AdminPanel,
+    name: 'adminpanel',
     meta: { 
     requiresAuth: true,
     is_admin: true
@@ -38,6 +39,7 @@ const routes = [
   },
   { path: '/',
    component: Comparisone,
+   name: 'comparisone',
    meta: {
      requiresAuth: true
    } 
@@ -53,14 +55,25 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if(to.matched.some(record => record.meta.requiresAuth)) {
+  let is_admin = JSON.parse(localStorage.getItem('is_admin'))
+  //console.log(is_admin)
+  if(to.matched.some(record => record.meta.is_admin)) {
+    if(is_admin == 1){
+      next()
+    }
+    else{
+      alert("access denied")
+      //next('/login')
+  }
+  } else if(to.matched.some(record => record.meta.requiresAuth)){
     if (store.getters.isLoggedIn) {
       next()
       return
     }
     next('/login') 
-  } else {
-    next() 
+  }
+  else{
+    next()
   }
 })
 new Vue({
