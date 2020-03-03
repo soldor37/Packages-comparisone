@@ -21,6 +21,7 @@
     <v-navigation-drawer
       v-model="drawer"
       app
+      v-if="isLoggedIn"
     >
       <v-list dense >
         <v-list-item link >
@@ -39,14 +40,6 @@
             <v-list-item-title class="title"><router-link to="/AdminPanel" tag="nav">Database</router-link></v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item link v-if="isLoggedIn">
-          <v-list-item-action>
-            <v-icon>mdi-database-edit</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title class="title" @click="logout">Logout</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
@@ -57,6 +50,16 @@
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title>Application</v-toolbar-title>
+<v-spacer></v-spacer>
+      <v-btn class="ma-2" tag="loginbtm" color="primary" to="/login" v-if="!isLoggedIn"> 
+        Login
+        <v-icon>mdi-login-variant</v-icon>
+      </v-btn>
+
+      <v-btn class="ma-2" tag="loginbtm" color="primary" v-if="isLoggedIn" @click="logout">
+        Logout
+        <v-icon>mdi-logout</v-icon>
+      </v-btn>
     </v-app-bar>
 
     <v-content>

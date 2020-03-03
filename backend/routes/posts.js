@@ -23,12 +23,8 @@ async function selectByLogin(login) {
 router.post('/login', (req, res) => {
     (async () => {
         await selectByLogin(req.body.login)
-        console.log(req.body.password, ObjectUsers[0].password)
         let passwordIsValid = bcrypt.compareSync(req.body.password, ObjectUsers[0].password);
-        //let passwordIsValid = bcrypt.compareSync(req.body.password, bcrypt.hashSync(ObjectUsers[0].password,8));
-        //let passwordIsValid = (bcrypt.hashSync(req.body.password,8) == ObjectUsers[0].password)
-        console.log(bcrypt.hashSync(req.body.password,8))
-        console.log(passwordIsValid)
+        //console.log(bcrypt.hashSync(req.body.password,8))
         if (!passwordIsValid)return res.status(401).send({ auth: false, token: null });
         let token = jwt.sign({ id: ObjectUsers[0].id }, config.secret, { expiresIn: 1 // expires in 24 hours
         });
@@ -55,7 +51,7 @@ router.get('/', function (req, res) {
 
 router.post('/insert', function (req, res) {
     //console.log(req.body)
-    connection.getConnection.query(`INSERT INTO packaging(idpack, pack_name) VALUES(?,?)`,[req.body.idpack,req.body.pack_name], function (err, data) {
+    connection.getConnection.query(`INSERT INTO packaging(pack_name) VALUES(?)`,[req.body.pack_name], function (err, data) {
         if (err) return console.log(err);
     });
     res.send('Data insert received')

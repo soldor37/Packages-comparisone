@@ -29,9 +29,6 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.idpack" label="ID"></v-text-field>
-                  </v-col>
-                  <v-col cols="12" sm="6" md="4">
                     <v-text-field v-model="editedItem.pack_name" label="Package name"></v-text-field>
                   </v-col>
                 </v-row>
@@ -87,11 +84,10 @@ export default {
       ],
       editedIndex: -1,
       editedItem: {
-        idpack: 0,
         pack_name: '',
+        idpack: '',
       },
       defaultItem: {
-        idpack: 0,
         pack_name: '',
       },
       packages: []
@@ -149,6 +145,7 @@ export default {
         axios
         .post(`http://${hostname}:3000/posts/insert`, item)
         .then(response => {
+          this.getPackages()
           console.log(response);
         })
         .catch(error => {
@@ -163,6 +160,7 @@ export default {
         axios
         .post(`http://${hostname}:3000/posts/edit`, item)
         .then(response => {
+          this.getPackages()
           console.log(response);
         })
         .catch(error => {

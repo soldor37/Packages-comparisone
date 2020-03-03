@@ -36,7 +36,12 @@ const routes = [
     is_admin: true
     } 
   },
-  { path: '/', component: Comparisone },
+  { path: '/',
+   component: Comparisone,
+   meta: {
+     requiresAuth: true
+   } 
+  },
   { path : '/login', component: Login },
   // otherwise redirect to home
   { path: '*', redirect: '/' }
