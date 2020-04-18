@@ -16,6 +16,8 @@ import AdminPanel from './components/AdminPanel'
 import Comparisone from './components/Comparisone'
 // импортируем Login компонент
 import Login from './components/Login'
+// импортируем Register компонент
+import Register from './components/Register'
 import store from './store.js'
 import Axios from 'axios'
 import vuetify from './plugins/vuetify';
@@ -45,6 +47,7 @@ const routes = [
    } 
   },
   { path : '/login', component: Login },
+  {path : '/register', component: Register},
   // otherwise redirect to home
   { path: '*', redirect: '/' }
   ]

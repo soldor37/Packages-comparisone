@@ -1,25 +1,21 @@
 <template>
   <div>
-    <h4>Register</h4>
+    <h4>Registration</h4>
     <form @submit.prevent="register">
-      <label for="name">Name</label>
       <div>
-          <input id="name" type="text" v-model="name" required autofocus>
-      </div>
-      <label for="login" >E-Mail Address</label>
-      <div>
-          <input id="login" type="login" v-model="login" required>
-      </div>
-      <label for="password">Password</label>
-      <div>
-          <input id="password" type="password" v-model="password" required>
-      </div>
-      <label for="password-confirm">Confirm Password</label>
-      <div>
-          <input id="password-confirm" type="password" v-model="password_confirmation" required>
+          <v-text-field label="Login"  hide-details="auto" id="login" type="login" v-model="login" required></v-text-field>
       </div>
       <div>
-          <button type="submit">Register</button>
+          <v-text-field label="Password"  hide-details="auto" id="password" type="password" v-model="password" required></v-text-field>
+      </div>
+      <div>
+          <v-text-field label="Confirm Password"  hide-details="auto" id="password-confirm" type="password" v-model="password_confirmation" required></v-text-field>
+      </div>
+      <div>
+        <v-btn class="ma-2" color="primary" type="submit" > 
+        Register
+        <v-icon>mdi-register</v-icon>
+      </v-btn>
       </div>
     </form>
   </div>
@@ -29,7 +25,6 @@
   export default {
     data(){
       return {
-        name : "",
         login : "",
         password : "",
         password_confirmation : "",
@@ -39,7 +34,6 @@
     methods: {
       register: function () {
         let data = {
-          name: this.name,
           login: this.login,
           password: this.password,
           is_admin: this.is_admin

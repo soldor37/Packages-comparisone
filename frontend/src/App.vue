@@ -100,7 +100,6 @@
     },
     methods: {
       isAdmin: function () {
-        console.log(localStorage)
         this.is_admin = localStorage.is_admin;
       },
       logout: function () {

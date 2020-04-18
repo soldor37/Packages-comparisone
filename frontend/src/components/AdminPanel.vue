@@ -1,9 +1,17 @@
 <template>
 <div>
+  <v-btn class="ma-2" color="primary" to="/register"> 
+        New user
+        <v-icon>mdi-register</v-icon>
+      </v-btn>
   <v-data-table
     :headers="headers"
-    :items="packages"
+    :items="packfull"
     sort-by="ID"
+    :single-expand="singleExpand"
+    :expanded.sync="expanded"
+    item-key="name"
+    show-expand
     class="elevation-1"
   >
   
@@ -24,12 +32,20 @@
             <v-card-title>
               <span class="headline">{{ formTitle }}</span>
             </v-card-title>
-            <!-- что лежит в таблице-->
+            <!-- редактирование записи в таблице-->
             <v-card-text>
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.pack_name" label="Package name"></v-text-field>
+                    <v-text-field v-model="editedItem.name" label="Package name"></v-text-field>                    
+                    <div v-for="(mat, mat_key) in editedItem.materials" v-bind:key="mat_key" >
+                      <v-text-field  v-model="editedItem.materials[mat_key].mass" :label="mat.name"></v-text-field>
+                      <br>
+                      <v-text-field  class="ml-5" v-for="(eco, eco_key) in mat.ecolcharacts" v-model="editedItem.materials[mat_key].ecolcharacts[eco_key].value" :label="eco.name" v-bind:key="eco_key"></v-text-field>
+                    </div>
+                    <!--<div v-for="(koeff, koeff_key) in ecolkoeff" v-bind:key="koeff_key" >
+                      <v-text-field v-model="ecolkoeff[koeff_key].value" :label="editedItem.materials[0].ecolcharacts[koeff_key].name + ' criteria'"></v-text-field>
+                    </div>-->
                   </v-col>
                 </v-row>
               </v-container>
@@ -61,6 +77,22 @@
     <template v-slot:no-data>
       <v-btn color="primary" @click="getPackages">Reset</v-btn>
     </template>
+    <!--Выпадающий список для элементов таблицы-->
+    <template v-slot:expanded-item="{ headers, item }" >
+      <td :colspan="headers.length" > 
+        <ul>
+          <li v-for="(mat, key) in item.materials" v-bind:key="key">
+              {{mat.name }} : {{mat.mass}}
+              <ul>
+                <li v-for="(ecol, eco_key) in mat.ecolcharacts" v-bind:key="eco_key">
+                  {{ecol.name}} : {{ecol.value}}
+                </li>
+              </ul>
+              
+          </li>
+        </ul>
+      </td>
+    </template>
   </v-data-table>
   </div>
 </template>
@@ -71,15 +103,17 @@ export default {
   name: "adminpanel",
   data() {
     return {
+      expanded: [],
       dialog: false,
+      singleExpand: true,
       headers: [
         {
           text: 'Package name',
           align: 'left',
           sortable: false,
-          value: 'pack_name',
+          value: 'name',
         },
-        { text: 'ID', value: 'idpack' },
+        { text: 'ID', value: 'id' },
         { text: 'Actions', value: 'action', sortable: false },
       ],
       editedIndex: -1,
@@ -90,13 +124,61 @@ export default {
       defaultItem: {
         pack_name: '',
       },
-      packages: []
+      packages: [],
+      materials: [],
+      weight: [],
+      ecolchar: [],
+      ecolkoeff: []
     };
   },
   computed: {
       formTitle () {
         return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
       },
+      packfull (){
+        if(this.packages == null && this.materials == null && this.weight == null){
+          return null;
+        }
+        let app = this;
+        return this.packages.map(function(pk){
+            return {
+              'id': pk.idpack,
+              'name': pk.pack_name,
+              'materials': app.materials.map(function(material){
+                let mass = 0;
+                app.weight.forEach(function(w){
+                    if(w.fk_id_pack ==  pk.idpack && w.fk_id_material == material.idmaterials)
+                    {
+                      mass = w.material_weight;
+                    }
+                });
+                let ecolcharacts = [];
+                app.ecolchar.forEach(function(e){
+                  if(e.fk_id_material == material.idmaterials){                    
+                    let tmp = {
+                      'idecol': e.idecol,
+                      'name': e.ecol_name,
+                      'value': e.ecol_value,
+                    }
+                    ecolcharacts.push(tmp);
+                  }
+                });
+
+                return {
+                  'idmaterials': material.idmaterials,
+                  'name': material.material_name,
+                  'mass': mass,
+                  'ecolkoeff': app.ecolkoeff,
+                  'ecolcharacts': ecolcharacts
+                }
+              }),
+            }
+        });
+
+
+
+
+      }
     },
     watch: {
       dialog (val) {
@@ -104,11 +186,18 @@ export default {
       },
     },
     created () {
-      this.getPackages()
+      this.getData();
     },
   methods: {
+    getData() {
+      this.getPackages(),
+      this.getMaterials(),
+      this.getWeight(),
+      this.getEcolchar(),
+      this.getEcolkoeff()      
+    },
     editItem (item) {
-        this.editedIndex = this.packages.indexOf(item)
+        this.editedIndex = item.id;
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       },
@@ -145,7 +234,7 @@ export default {
         axios
         .post(`http://${hostname}:3000/posts/insert`, item)
         .then(response => {
-          this.getPackages()
+          this.getData()
           console.log(response);
         })
         .catch(error => {
@@ -154,13 +243,12 @@ export default {
           console.log(error);
         });
       },
-      onEdit(item){
+      onEdit(editedItem){
         var hostname = window.location.hostname;
-        //var app = this;
         axios
-        .post(`http://${hostname}:3000/posts/edit`, item)
+        .post(`http://${hostname}:3000/posts/edit`, editedItem)
         .then(response => {
-          this.getPackages()
+          this.getData()
           console.log(response);
         })
         .catch(error => {
@@ -196,7 +284,67 @@ export default {
           console.log("-----error-------");
           console.log(error);
         });
-    }
+    },
+    getMaterials() {
+      var app = this;
+      var hostname = window.location.hostname;
+      axios
+        .get(`http://${hostname}:3000/posts/DBmaterials`)
+        .then(response => {
+          console.log(response);
+          app.materials = response.data;
+        })
+        .catch(error => {
+          alert(error + "\n Failed connect to DB");
+          console.log("-----error-------");
+          console.log(error);
+        });
+    },
+    getWeight() {
+      var app = this;
+      var hostname = window.location.hostname;
+      axios
+        .get(`http://${hostname}:3000/posts/DBweight`)
+        .then(response => {
+          console.log(response);
+          app.weight = response.data;
+        })
+        .catch(error => {
+          alert(error + "\n Failed connect to DB");
+          console.log("-----error-------");
+          console.log(error);
+        });
+    },
+    getEcolchar() {
+      var app = this;
+      var hostname = window.location.hostname;
+      axios
+        .get(`http://${hostname}:3000/posts/DBecolchar`)
+        .then(response => {
+          console.log(response);
+          app.ecolchar = response.data;
+        })
+        .catch(error => {
+          alert(error + "\n Failed connect to DB");
+          console.log("-----error-------");
+          console.log(error);
+        });
+    },
+    getEcolkoeff() {
+      var app = this;
+      var hostname = window.location.hostname;
+      axios
+        .get(`http://${hostname}:3000/posts/DBecolkoeff`)
+        .then(response => {
+          console.log(response);
+          app.ecolkoeff = response.data;
+        })
+        .catch(error => {
+          alert(error + "\n Failed connect to DB");
+          console.log("-----error-------");
+          console.log(error);
+        });
+    },
   }
 };
 </script>

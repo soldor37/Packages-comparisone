@@ -17,34 +17,106 @@ app.use(express.urlencoded({ extended: true })) // for parsing application/x-www
 app.set("view engine", "hbs");
 
 const urlencodedParser = bodyParser.urlencoded({extended: false});
-/**
- * @type {Pool}
- */
-var db = null;
-/**
- * @return {Pool}
- */
-function getConnection() {
-    if (db === null) {
-        db = mysql.createPool(getConfig()).promise();
-    }
-    console.log('Connected to DB');
-    return db;
-}
-module.exports.getConnection = getConnection();
-/**
- * @returns {Object}
- */
-function getConfig() {
-    return {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASS,
-        database: process.env.DB_NAME
-    };
+// /**
+//  * @type {Pool}
+//  */
+// var db = null;
+// /**
+//  * @return {Pool}
+//  */
+// function getConnection() {
+//     if (db === null) {
+//         db = mysql.createPool(getConfig()).promise();
+//     }
+//     console.log('Connected to DB');
+//     return db;
+// }
+// module.exports.getConnection = getConnection();
+// /**
+//  * @returns {Object}
+//  */
+// function getConfig() {
+//     return {
+//         host: process.env.DB_HOST,
+//         user: process.env.DB_USER,
+//         password: process.env.DB_PASS,
+//         database: process.env.DB_NAME
+//     };
+// }
+
+let pool = mysql.createPool({
+    connectionLimit: 10,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
+});
+let connect = () => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, connection) => {
+            !err ? resolve(connection) : reject(err)
+        });
+    })
 }
 
+let find = (sql, params) => {
+    return new Promise(async (resolve, reject) => {
+        let connection = await connect();
+        connection.query(sql, [{
+            ...params
+        }], (err, results, fields) => {
+            !err ? resolve(results) : reject(err)
+            connection.release();
+            //console.log(results)
+        });
+    })
+}
 
+let insert = (sql, params) => {
+    return new Promise(async (resolve, reject) => {
+        let connection = await connect();
+        connection.query(sql, [{
+            ...params
+        }], (err, results, fields) => {
+            !err ? resolve(results) : reject(err)
+            connection.release();
+        })
+    })
+}
+
+let del = (sql, params) => {
+    return new Promise(async (resolve, reject) => {
+        let connection = await connect();
+        connection.query(sql, [{
+            ...params
+        }], (err, results, fields) => {
+            !err ? resolve(results) : reject(err)
+            connection.release();
+        })
+    })
+}
+
+let update = (sql, params1, params2) => {
+    return new Promise(async (resolve, reject) => {
+        let connection = await connect();
+        //`UPDATE ${table} SET ? WHERE ?`
+        connection.query(sql, [{
+            ...params1
+        }, {
+            ...params2
+        }], (err, results, fields) => {
+            !err ? resolve(results) : reject(err)
+            connection.release();
+        })
+    })
+}
+module.exports = {
+    connect,
+    find,
+    insert,
+    del,
+    update
+}
 
 
 
@@ -58,14 +130,14 @@ app.listen(3000);
 console.log('Сервер стартовал!');
 
 // получение списка упаковок
-app.get("/packs", function(req, res){
-    getConnection().query("SELECT * FROM packaging", function(err, data) {
-      if(err) return console.log(err);
-      res.render("index.hbs", {
-          packs: data
-      });
-    });
-});
+// app.get("/packs", function(req, res){
+//     getConnection().query("SELECT * FROM packaging", function(err, data) {
+//       if(err) return console.log(err);
+//       res.render("index.hbs", {
+//           packs: data
+//       });
+//     });
+// });
 
 
 //аутонтификация
@@ -80,12 +152,12 @@ router.use(allowCrossDomain)
 
 //вывод списка пользователей
 router.get('/users', function(req, res) {
-    getConnection().query(`SELECT * FROM users`, function (err, data) {
-        if (err) return res.status(500).send("There was a problem getting users.");
-        res.send(JSON.stringify(data));
-    }); 
+    return new Promise(async (resolve, reject) => {
+        sql = 'SELECT * FROM users';
+        let users = await find(sql);
+        res.send(JSON.stringify(users));
+    });
 });
-
 // //аутонтификация по логину и паролю
 // router.post('/login', (req, res) => {
 //     console.log(req.body)
@@ -100,30 +172,7 @@ router.get('/users', function(req, res) {
 //     });
 // })
 
-// const selectByName = function(name, callback) {
-//     return getConnection().query(
-//         `SELECT * FROM users WHERE name = ?`,
-//         [name],function(err,row){
-//             callback(err,row)
 
-//         })
-// }
-// //регистрация новых пользователей
-// router.post('/register', function(req, res) {
-//     getConnection().Db_methods.insert([
-//         req.body.name,
-//         bcrypt.hashSync(req.body.password, 8)
-//     ],
-//     function (err) {
-//         if (err) return res.status(500).send("There was a problem registering the user.")
-//         db.selectByName(req.body.name, (err,user) => {
-//             if (err) return res.status(500).send("There was a problem getting user")
-//             let token = jwt.sign({ id: user.id }, config.secret, {expiresIn: 86400 // expires in 24 hours
-//             });
-//             res.status(200).send({ auth: true, token: token, user: user });
-//         }); 
-//     }); 
-// });
 // //регистрация администратора
 // router.post('/register-admin', function(req, res) {
 //     db.insertAdmin([
@@ -162,7 +211,12 @@ router.get('/users', function(req, res) {
     // }
 
 
-
+// router.get('/users', function(req, res) {
+//     getConnection().query(`SELECT * FROM users`, function (err, data) {
+//         if (err) return res.status(500).send("There was a problem getting users.");
+//         res.send(JSON.stringify(data));
+//     }); 
+// });
 // http.createServer(function(request,response){
 //     response.write("Hello world!");
 //     response.end();

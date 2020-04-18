@@ -7,12 +7,14 @@ const jwt = require('jsonwebtoken');
 const config = require('../config')
 
 async function selectByLogin(login) {
+    let conn = await connection.connect();
     return new Promise((resolve, reject) => {
-        connection.getConnection.query(`SELECT * FROM users WHERE login = ?`, login)
+        conn.promise().query(`SELECT * FROM users WHERE login = ?`, login)
         .then(result =>{
             ObjectUsers = [];
             ObjectUsers = result[0];
-            resolve(ObjectUsers)
+            resolve(ObjectUsers);
+            conn.release();
           })
           .catch(function(err) {
             console.log(err.message);
@@ -30,31 +32,55 @@ router.post('/login', (req, res) => {
         });
         res.status(200).send({ auth: true, token: token, user: ObjectUsers[0] });
     })();
-        
 })
+// const selectByName = function(name, callback) {
+//     return connection.getConnection.query(
+//         `SELECT * FROM users WHERE login = ?`,
+//         [name],function(err,row){
+//             callback(err,row)
 
+//         })
+// }
+//регистрация новых пользователей
+router.post('/register', function(req, res) {
+    getConnection().Db_methods.insert([
+        req.body.name,
+        bcrypt.hashSync(req.body.password, 8)
+    ],
+    function (err) {
+        if (err) return res.status(500).send("There was a problem registering the user.")
+        selectByName(req.body.name, (err,user) => {
+            if (err) return res.status(500).send("There was a problem getting user")
+            let token = jwt.sign({ id: user.id }, config.secret, {expiresIn: 86400 // expires in 24 hours
+            });
+            res.status(200).send({ auth: true, token: token, user: user });
+        }); 
+    }); 
+});
 router.get('/users', function (req, res) {
-    connection.getConnection.query("SELECT * FROM users WHERE login = 'admin'", function (err, data) {
-        if (err) return console.log(err);
-        res.send(data);
+    let sql = "SELECT * FROM users WHERE login = 'admin'";
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(JSON.stringify(data));
     });
 });
 let ObjectUsers = [];
 
 //---------------работа с упаковками------------------
 router.get('/', function (req, res) {
-    connection.getConnection.query("SELECT idpack, pack_name FROM packaging", function (err, data) {
-        if (err) return console.log(err);
+    let sql = "SELECT idpack, pack_name FROM packaging";
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
         res.send(data);
     });
 });
 
 router.post('/insert', function (req, res) {
-    //console.log(req.body)
-    connection.getConnection.query(`INSERT INTO packaging(pack_name) VALUES(?)`,[req.body.pack_name], function (err, data) {
-        if (err) return console.log(err);
+    let sql = `INSERT INTO packaging(pack_name) VALUES(?)`;
+    return new Promise(async (resolve, reject) => {
+        await connection.find(sql,req.body.name);
+        res.send('Data insert received');
     });
-    res.send('Data insert received')
 });
 
 router.post('/delete', function (req, res) {
@@ -64,13 +90,34 @@ router.post('/delete', function (req, res) {
     });
     res.send('Data delete received')
 });
-
+// const query = (sql, options, callback) => {
+//         connection.getConnection.query(sql, options, (err, results, fields) => {
+//           callback(err, results, fields);
+//           conn.release();
+//         });
+//   }
 router.post('/edit', function (req, res) {
-    //console.log(req.body)
-    connection.getConnection.query(`UPDATE packaging SET pack_name = ? WHERE (idpack = ?)`,[req.body.pack_name,req.body.idpack], function (err, data) {
-        if (err) return console.log(err);
+    let sql = `UPDATE packaging SET pack_name = '${req.body.name}' WHERE idpack = '${req.body.id}';`
+    let materials = req.body.materials;
+    return new Promise(async (resolve, reject) => {
+        await connection.update(sql);
+        return new Promise(async (resolve, reject) => {
+            let conn = await connection.connect();
+            materials.forEach(function(mat){
+                conn.promise().query(`UPDATE material_weight SET material_weight = '${mat.mass}' WHERE fk_id_pack = '${req.body.id}' and fk_id_material = '${mat.idmaterials}';`)
+                .then(result =>{
+                    conn.release();
+                })
+                .catch(function(err) {
+                    console.log(err.message);
+            });
+        })
+        res.send('Data edit received');
+        });
+        
     });
-    res.send('Data edit received')
+    
+    
 });
 
 router.post('/calc', function (req, res) {
@@ -172,9 +219,10 @@ async function calcFormula2(packid) {
 }
 
 async function getWeightMaterial(idpack) {
+    let conn = await connection.connect();
     return new Promise((resolve, reject) => {
         //console.log("За инфой Пришла пачка -",idpack);
-        connection.getConnection.query(`SELECT
+        conn.promise().query(`SELECT
         material_weight.fk_id_material, ecol_name, ecol_value, material_weight, fk_id_pack
         FROM
         mydb.ecol_charact
@@ -190,6 +238,7 @@ async function getWeightMaterial(idpack) {
           .then(result =>{
             //console.log(ObjectEcos.weightMaterial);
             resolve(ObjectEcos.weightMaterial);
+            conn.release();
           })
           .catch(function(err) {
             console.log(err.message);
@@ -199,15 +248,17 @@ async function getWeightMaterial(idpack) {
 }
 
 async function getPacks(idpack) {
+    let conn = await connection.connect();
     return new Promise((resolve, reject) => {
         //console.log("За инфой Пришла пачка -",idpack);
-        connection.getConnection.query(`SELECT idpack, pack_name FROM packaging WHERE idpack =` + idpack)
+        conn.promise().query(`SELECT idpack, pack_name FROM packaging WHERE idpack =` + idpack)
         .then(result =>{
             ObjectEcos.packs = result[0];
           })
           .then(result =>{
             console.log(ObjectEcos.packs);
             resolve(ObjectEcos.packs);
+            conn.release();
           })
           .catch(function(err) {
             console.log(err.message);
@@ -215,6 +266,40 @@ async function getPacks(idpack) {
           });
     });
 }
+ 
+//------------Парсинг таблиц из БД----------------
+//таблица названий материалов
+router.get('/DBmaterials', function (req, res) {
+    let sql = "SELECT * FROM materials;"
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(data);
+    });
+});
+//таблица весов материалов
+router.get('/DBweight', function (req, res) {
+    let sql = "SELECT * FROM mydb.material_weight;"
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(data);
+    });
+});
+//таблица экологических характеристик
+router.get('/DBecolchar', function (req, res) {
+    let sql = "SELECT * FROM mydb.ecol_charact;"
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(data);
+    });
+});
+//таблица экол критериев (коэфф)
+router.get('/DBecolkoeff', function (req, res) {
+    let sql = "SELECT * FROM mydb.ecol_criteria;"
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(data);
+    });
+});
 // function getSettingsEco(packid) {
 //     connection.getConnection.query(`SELECT 
 //     *
