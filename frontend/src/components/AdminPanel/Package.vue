@@ -79,13 +79,13 @@
                                             </template>
                                         </v-edit-dialog>
                                     </template>
-                                    <template v-slot:expanded-item="{ item }" >
+                                    <template v-slot:expanded-item="{ kk, item }" >                                        
                                         <v-list-item>
                                             <v-list-item-content> 
                                                 <v-list-item-title v-for="(el, key) in item.ecols" v-bind:key="key">
                                                     {{el.ecol_name}}
                                                     <!-- {{el.ecol_measure}} -->
-                                                    <v-text-field v-model="el.value" label="Value"></v-text-field>
+                                                    <v-text-field v-model="item[el.ecol_name]" label="Value"></v-text-field>
                                                 </v-list-item-title>
                                             </v-list-item-content>
                                             
@@ -337,9 +337,31 @@ export default {
         }
         //если было добавление новой записи 
         else {
-          this.packages.push(this.editedItem)
-          funcInsert(this.editedItem)
-          //console.log(this.editedItem)
+            this.packages.push(this.editedItem)
+
+            let new_pack = {
+                name: this.editedItem.name,
+                materials: this.material_items_for_table.map(mat => {
+                    return {
+                        name: mat.name,
+                        value: mat.value,
+                        echo_char: mat.ecols.map(eco => {
+                            return {
+                                name: eco.ecol_name,
+                                value: mat[eco.ecol_name]
+                            }
+                        })
+                    }
+
+                })
+            }
+            console.log(new_pack);
+
+            
+
+
+            //funcInsert(this.editedItem)
+            //
         }
         this.close()
         

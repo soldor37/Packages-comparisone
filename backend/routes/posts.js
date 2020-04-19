@@ -85,7 +85,7 @@ router.get('/ecol_dict', function (req, res) {
 
 router.post('/insert', function (req, res) {
     console.log(req.body)
-    let sql1 = `INSERT INTO packaging(pack_name) VALUES('${req.body.name}');`
+    let sql1 = `INSERT INTO packaging(pack_name) VALUES('${req.body.name}');LAST_INSERT_ID();`
     // let materials = req.body.materials;
     // let ecolkoeff = req.body.ecolkoeff;
     return new Promise(async (resolve, reject) => {
