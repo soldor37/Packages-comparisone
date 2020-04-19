@@ -75,6 +75,19 @@ router.get('/', function (req, res) {
     });
 });
 
+
+
+
+router.get('/ecol_dict', function (req, res) {
+    let sql = "SELECT distinct ecol_name FROM ecol_charact;";
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(data);
+    });
+});
+
+
+
 router.post('/insert', function (req, res) {
     let sql = `INSERT INTO packaging(pack_name) VALUES(?)`;
     return new Promise(async (resolve, reject) => {

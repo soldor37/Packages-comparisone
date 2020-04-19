@@ -32,16 +32,45 @@
             <v-list-item-title class="title"><router-link to="/" tag="nav">Comparisone</router-link></v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item link v-if="is_admin == 1">
-          <v-list-item-action>
-            <v-icon>mdi-database-edit</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title class="title"><router-link to="/AdminPanel" tag="nav">Database</router-link></v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+
+        <v-list-group
+            sub-group
+            no-action
+          >
+            <template v-slot:activator>
+              <v-list-item-content>
+                <v-list-item-title>Database</v-list-item-title>
+              </v-list-item-content>
+            </template>
+            <v-list-item>
+              <router-link to="/admin/package">
+                <v-list-item-title >Packages</v-list-item-title>
+                <v-list-item-action><v-icon ></v-icon></v-list-item-action>
+              </router-link>
+              
+            </v-list-item>
+
+            <v-list-item>
+              <router-link to="/admin/material">
+                <v-list-item-title >Materials</v-list-item-title>
+                <v-list-item-action><v-icon ></v-icon></v-list-item-action>
+              </router-link>
+            </v-list-item>
+
+            <v-list-item>
+              <router-link to="/admin/ecolchars">
+                <v-list-item-title >Ecolchars</v-list-item-title>
+                <v-list-item-action><v-icon ></v-icon></v-list-item-action>
+              </router-link>
+            </v-list-item>
+
+          </v-list-group>
        </v-list>
     </v-navigation-drawer>
+
+
+
+        
 
     <v-app-bar
       app

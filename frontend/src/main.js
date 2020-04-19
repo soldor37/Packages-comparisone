@@ -18,6 +18,13 @@ import Comparisone from './components/Comparisone'
 import Login from './components/Login'
 // импортируем Register компонент
 import Register from './components/Register'
+
+import Package from './components/AdminPanel/Package'
+import Material from './components/AdminPanel/Material'
+import Ecolchars from './components/AdminPanel/Ecolchars'
+
+
+
 import store from './store.js'
 import Axios from 'axios'
 import vuetify from './plugins/vuetify';
@@ -30,6 +37,35 @@ if (token) {
 }
 // инициализируем роуты
 const routes = [
+  { 
+    path: '/admin/package',
+    component: Package,
+    name: 'packages',
+    meta: { 
+      requiresAuth: true,
+      is_admin: true
+    } 
+  },
+  { 
+    path: '/admin/material',
+    component: Material,
+    name: 'materials',
+    meta: { 
+      requiresAuth: true,
+      is_admin: true
+    } 
+  },
+  { 
+    path: '/admin/ecolchars',
+    component: Ecolchars,
+    name: 'ecolchars',
+    meta: { 
+      requiresAuth: true,
+      is_admin: true
+    } 
+  },
+
+
   { 
     path: '/AdminPanel',
     component: AdminPanel,
