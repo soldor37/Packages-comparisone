@@ -39,8 +39,6 @@
                                     :items="material_for_select"
                                     outlined
                                     dense
-                                    chips
-                                    small-chips
                                     label="Materials"
                                     multiple
                                     >
@@ -86,7 +84,8 @@
                                             <v-list-item-content> 
                                                 <v-list-item-title v-for="(el, key) in item.ecols" v-bind:key="key">
                                                     {{el.ecol_name}}
-                                                    <v-text-field v-model="el.value" label="val"></v-text-field>
+                                                    <!-- {{el.ecol_measure}} -->
+                                                    <v-text-field v-model="el.value" label="Value"></v-text-field>
                                                 </v-list-item-title>
                                             </v-list-item-content>
                                             

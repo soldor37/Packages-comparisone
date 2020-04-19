@@ -56,14 +56,6 @@
                 <v-list-item-action><v-icon ></v-icon></v-list-item-action>
               </router-link>
             </v-list-item>
-
-            <v-list-item>
-              <router-link to="/admin/ecolchars">
-                <v-list-item-title >Ecolchars</v-list-item-title>
-                <v-list-item-action><v-icon ></v-icon></v-list-item-action>
-              </router-link>
-            </v-list-item>
-
           </v-list-group>
        </v-list>
     </v-navigation-drawer>

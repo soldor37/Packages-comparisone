@@ -75,9 +75,6 @@ router.get('/', function (req, res) {
     });
 });
 
-
-
-
 router.get('/ecol_dict', function (req, res) {
     let sql = "SELECT distinct ecol_name FROM ecol_charact;";
     return new Promise(async (resolve, reject) => {
@@ -86,14 +83,40 @@ router.get('/ecol_dict', function (req, res) {
     });
 });
 
-
-
 router.post('/insert', function (req, res) {
-    let sql = `INSERT INTO packaging(pack_name) VALUES(?)`;
+    console.log(req.body)
+    let sql1 = `INSERT INTO packaging(pack_name) VALUES('${req.body.name}');`
+    // let materials = req.body.materials;
+    // let ecolkoeff = req.body.ecolkoeff;
     return new Promise(async (resolve, reject) => {
-        await connection.find(sql,req.body.name);
+        await connection.insert(sql1); //вносим изменения в таблицу названий упаковок
+        // return new Promise(async (resolve, reject) => {
+        //     let conn = await connection.connect();
+        //     materials.forEach(function(mat){
+        //         conn.promise().query(`UPDATE material_weight SET material_weight = '${mat.mass}' WHERE fk_id_pack = '${req.body.id}' and fk_id_material = '${mat.idmaterials}';`)
+        //         .then(result =>{
+        //             mat.ecolcharacts.forEach(function(eco){
+        //                 conn.promise().query(`UPDATE ecol_charact SET ecol_value = '${eco.value}' WHERE idecol = '${eco.idecol}' and fk_id_material = '${mat.idmaterials}';`)
+        //             });
+        //         })
+        //         .then(result =>{
+        //             ecolkoeff.forEach(function(eco){
+        //                 conn.promise().query(`UPDATE ecol_criteria SET value = '${eco.value}' WHERE idecol_criteria = '${eco.idecol_criteria}';`)
+        //             });
+        //         })
+        //         .then(result =>{
+        //             conn.release();
+        //         })
+        //         .catch(function(err) {
+        //             console.log(err.message);
+        //     });
+        // })
+
+        
+        // });
         res.send('Data insert received');
     });
+    
 });
 //удаление упаковки вместе с принадлежащими ей весовыми значения материалов
 router.post('/delete', function (req, res) {
@@ -151,9 +174,34 @@ router.post('/edit', function (req, res) {
         
     });
     
+});
+// ---------------работа с материалами(панель редактирования материалов)----------------
+router.post('/insertMaterial', function (req, res) {
+    let sql = `INSERT INTO materials(material_name) VALUES('${req.body.material_name}')`;
+    return new Promise(async (resolve, reject) => {
+        await connection.insert(sql);
+        res.send('Data insert received');
+    });
+});
+//удаление упаковки вместе с принадлежащими ей весовыми значения материалов
+router.post('/deleteMaterial', function (req, res) {
+    let sql = `DELETE FROM materials WHERE idmaterials = '${req.body.idmaterials}';`;
+    return new Promise(async (resolve, reject) => {
+        await connection.update(sql);
+        res.send('Data delete received');
+    });
     
 });
 
+router.post('/editMaterial', function (req, res) {
+    let sql = `UPDATE materials SET material_name = '${req.body.material_name}' WHERE idmaterials = '${req.body.idmaterials}';`;
+    return new Promise(async (resolve, reject) => {
+        await connection.update(sql);
+        res.send('Data edit received');
+    });
+    
+});
+// ---------------------Расчеты для сравнения--------------------------
 router.post('/calc', function (req, res) {
     let packid = req.body.params.ID;
     (async () => {

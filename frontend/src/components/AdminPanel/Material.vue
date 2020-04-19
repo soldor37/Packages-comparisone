@@ -6,7 +6,7 @@
     sort-by="ID"
     :single-expand="singleExpand"
     :expanded.sync="expanded"
-    item-key="name"
+    item-key="material_name"
     show-expand
     class="elevation-1"
   >
@@ -33,8 +33,7 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.name" label="Material name"></v-text-field>
-                    
+                    <v-text-field v-model="editedItem.material_name" label="Material name"></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -64,7 +63,7 @@
       </v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn color="primary" @click="getPackages">Reset</v-btn>
+      <v-btn color="primary" @click="getMaterials">Reset</v-btn>
     </template>    
   </v-data-table>
   </div>
@@ -95,11 +94,7 @@ export default {
       defaultItem: {
         pack_name: '',
       },
-      packages: [],
       materials: [],
-      weight: [],
-      ecolchar: [],
-      ecolkoeff: []
     };
   },
   computed: {
@@ -113,10 +108,6 @@ export default {
         let app = this;
 
         return app.materials;
-
-
-
-
       }
     },
     watch: {
@@ -132,13 +123,13 @@ export default {
       this.getMaterials()
     },
     editItem (item) {
-        this.editedIndex = item.id;
+        this.editedIndex = item.idmaterials;
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       },
       deleteItem (item, funcDelete) {
-        const index = this.packages.indexOf(item.id)
-        confirm('Are you sure you want to delete this item?') && this.packages.splice(index, 1)
+        const index = this.materials.indexOf(item.id)
+        confirm('Are you sure you want to delete this item?') && this.materials.splice(index, 1)
         funcDelete(item)
       },
       close () {
@@ -151,12 +142,12 @@ export default {
       save (funcInsert,funcEdit) {
         //если было редактирование
         if (this.editedIndex > -1) {
-          Object.assign(this.packages[this.editedIndex], this.editedItem)
+          Object.assign(this.materials[this.editedIndex], this.editedItem)
           funcEdit(this.editedItem)
         }
         //если было добавление новой записи 
         else {
-          this.packages.push(this.editedItem)
+          this.materials.push(this.editedItem)
           funcInsert(this.editedItem)
           //console.log(this.editedItem)
         }
@@ -167,7 +158,7 @@ export default {
         var hostname = window.location.hostname;
         //var app = this;
         axios
-        .post(`http://${hostname}:3000/posts/insert`, item)
+        .post(`http://${hostname}:3000/posts/insertMaterial`, item)
         .then(response => {
           this.getData()
           console.log(response);
@@ -181,7 +172,7 @@ export default {
       onEdit(editedItem){
         var hostname = window.location.hostname;
         axios
-        .post(`http://${hostname}:3000/posts/edit`, editedItem)
+        .post(`http://${hostname}:3000/posts/editMaterial`, editedItem)
         .then(response => {
           this.getData()
           console.log(response);
@@ -195,7 +186,7 @@ export default {
       onDelete(item){
         var hostname = window.location.hostname;
         axios
-        .post(`http://${hostname}:3000/posts/delete`, item)
+        .post(`http://${hostname}:3000/posts/deleteMaterial`, item)
         .then(response => {
           console.log(response);
         })
@@ -205,21 +196,6 @@ export default {
           console.log(error);
         });
       },
-    getPackages() {
-      var app = this;
-      var hostname = window.location.hostname;
-      axios
-        .get(`http://${hostname}:3000/posts`)
-        .then(response => {
-          console.log(response);
-          app.packages = response.data;
-        })
-        .catch(error => {
-          alert(error + "\n Failed connect to DB");
-          console.log("-----error-------");
-          console.log(error);
-        });
-    },
     getMaterials() {
       var app = this;
       var hostname = window.location.hostname;
@@ -228,51 +204,6 @@ export default {
         .then(response => {
           console.log(response);
           app.materials = response.data;
-        })
-        .catch(error => {
-          alert(error + "\n Failed connect to DB");
-          console.log("-----error-------");
-          console.log(error);
-        });
-    },
-    getWeight() {
-      var app = this;
-      var hostname = window.location.hostname;
-      axios
-        .get(`http://${hostname}:3000/posts/DBweight`)
-        .then(response => {
-          console.log(response);
-          app.weight = response.data;
-        })
-        .catch(error => {
-          alert(error + "\n Failed connect to DB");
-          console.log("-----error-------");
-          console.log(error);
-        });
-    },
-    getEcolchar() {
-      var app = this;
-      var hostname = window.location.hostname;
-      axios
-        .get(`http://${hostname}:3000/posts/DBecolchar`)
-        .then(response => {
-          console.log(response);
-          app.ecolchar = response.data;
-        })
-        .catch(error => {
-          alert(error + "\n Failed connect to DB");
-          console.log("-----error-------");
-          console.log(error);
-        });
-    },
-    getEcolkoeff() {
-      var app = this;
-      var hostname = window.location.hostname;
-      axios
-        .get(`http://${hostname}:3000/posts/DBecolkoeff`)
-        .then(response => {
-          console.log(response);
-          app.ecolkoeff = response.data;
         })
         .catch(error => {
           alert(error + "\n Failed connect to DB");

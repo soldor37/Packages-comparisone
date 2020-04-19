@@ -21,8 +21,6 @@ import Register from './components/Register'
 
 import Package from './components/AdminPanel/Package'
 import Material from './components/AdminPanel/Material'
-import Ecolchars from './components/AdminPanel/Ecolchars'
-
 
 
 import store from './store.js'
@@ -55,17 +53,6 @@ const routes = [
       is_admin: true
     } 
   },
-  { 
-    path: '/admin/ecolchars',
-    component: Ecolchars,
-    name: 'ecolchars',
-    meta: { 
-      requiresAuth: true,
-      is_admin: true
-    } 
-  },
-
-
   { 
     path: '/AdminPanel',
     component: AdminPanel,
