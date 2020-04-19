@@ -82,29 +82,49 @@ router.post('/insert', function (req, res) {
         res.send('Data insert received');
     });
 });
-
+//удаление упаковки вместе с принадлежащими ей весовыми значения материалов
 router.post('/delete', function (req, res) {
-    //console.log(req.body)
-    connection.getConnection.query(`DELETE FROM packaging WHERE (idpack = ?)`,[req.body.idpack], function (err, data) {
-        if (err) return console.log(err);
-    });
-    res.send('Data delete received')
-});
-// const query = (sql, options, callback) => {
-//         connection.getConnection.query(sql, options, (err, results, fields) => {
-//           callback(err, results, fields);
-//           conn.release();
-//         });
-//   }
-router.post('/edit', function (req, res) {
-    let sql = `UPDATE packaging SET pack_name = '${req.body.name}' WHERE idpack = '${req.body.id}';`
+    let sql = `DELETE FROM packaging WHERE idpack = '${req.body.id}';`
     let materials = req.body.materials;
     return new Promise(async (resolve, reject) => {
-        await connection.update(sql);
+        await connection.del(sql); //вносим изменения в таблицу названий упаковок
+        return new Promise(async (resolve, reject) => {
+            let conn = await connection.connect();
+            materials.forEach(function(mat){
+                conn.promise().query(`DELETE FROM material_weight WHERE fk_id_pack = '${req.body.id}';`)
+                .then(result =>{
+                    conn.release();
+                })
+                .catch(function(err) {
+                    console.log(err.message);
+                });
+            })
+        res.send('Data delete received')
+        });
+    });
+    
+});
+
+router.post('/edit', function (req, res) {
+    let sql1 = `UPDATE packaging SET pack_name = '${req.body.name}' WHERE idpack = '${req.body.id}';`
+    let materials = req.body.materials;
+    let ecolkoeff = req.body.ecolkoeff;
+    return new Promise(async (resolve, reject) => {
+        await connection.update(sql1); //вносим изменения в таблицу названий упаковок
         return new Promise(async (resolve, reject) => {
             let conn = await connection.connect();
             materials.forEach(function(mat){
                 conn.promise().query(`UPDATE material_weight SET material_weight = '${mat.mass}' WHERE fk_id_pack = '${req.body.id}' and fk_id_material = '${mat.idmaterials}';`)
+                .then(result =>{
+                    mat.ecolcharacts.forEach(function(eco){
+                        conn.promise().query(`UPDATE ecol_charact SET ecol_value = '${eco.value}' WHERE idecol = '${eco.idecol}' and fk_id_material = '${mat.idmaterials}';`)
+                    });
+                })
+                .then(result =>{
+                    ecolkoeff.forEach(function(eco){
+                        conn.promise().query(`UPDATE ecol_criteria SET value = '${eco.value}' WHERE idecol_criteria = '${eco.idecol_criteria}';`)
+                    });
+                })
                 .then(result =>{
                     conn.release();
                 })
@@ -112,6 +132,7 @@ router.post('/edit', function (req, res) {
                     console.log(err.message);
             });
         })
+
         res.send('Data edit received');
         });
         

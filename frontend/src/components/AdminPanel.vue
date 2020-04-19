@@ -39,13 +39,14 @@
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field v-model="editedItem.name" label="Package name"></v-text-field>                    
                     <div v-for="(mat, mat_key) in editedItem.materials" v-bind:key="mat_key" >
-                      <v-text-field  v-model="editedItem.materials[mat_key].mass" :label="mat.name"></v-text-field>
+                      <v-text-field  v-model="editedItem.materials[mat_key].mass" :label="mat.name + ', (kg)'"></v-text-field>
                       <br>
-                      <v-text-field  class="ml-5" v-for="(eco, eco_key) in mat.ecolcharacts" v-model="editedItem.materials[mat_key].ecolcharacts[eco_key].value" :label="eco.name" v-bind:key="eco_key"></v-text-field>
+                      <v-text-field  class="ml-5" v-for="(eco, eco_key) in mat.ecolcharacts" v-model="editedItem.materials[mat_key].ecolcharacts[eco_key].value" :label="eco.name +', ('+ eco.measure+')'" v-bind:key="eco_key"></v-text-field>
+                      <br>
                     </div>
-                    <!--<div v-for="(koeff, koeff_key) in ecolkoeff" v-bind:key="koeff_key" >
-                      <v-text-field v-model="ecolkoeff[koeff_key].value" :label="editedItem.materials[0].ecolcharacts[koeff_key].name + ' criteria'"></v-text-field>
-                    </div>-->
+                    <div>
+                        <v-text-field v-for="(koeff, koeff_key) in editedItem.ecolkoeff" v-bind:key="koeff_key" v-model="editedItem.ecolkoeff[koeff_key].value" :label="editedItem.materials[0].ecolcharacts[koeff_key].name + ' criteria'"></v-text-field>
+                    </div>
                   </v-col>
                 </v-row>
               </v-container>
@@ -79,19 +80,14 @@
     </template>
     <!--Выпадающий список для элементов таблицы-->
     <template v-slot:expanded-item="{ headers, item }" >
-      <td :colspan="headers.length" > 
-        <ul>
-          <li v-for="(mat, key) in item.materials" v-bind:key="key">
-              {{mat.name }} : {{mat.mass}}
-              <ul>
-                <li v-for="(ecol, eco_key) in mat.ecolcharacts" v-bind:key="eco_key">
-                  {{ecol.name}} : {{ecol.value}}
-                </li>
-              </ul>
-              
-          </li>
-        </ul>
-      </td>
+      <v-list-item two-line>
+      <v-list-item-content>
+        <v-list-item-title v-for="(mat, key) in item.materials" v-bind:key="key">
+          {{mat.name }} : {{mat.mass}}, (kg)
+          <v-list-item-subtitle v-for="(ecol, eco_key) in mat.ecolcharacts" v-bind:key="eco_key">{{ecol.name}} : {{ecol.value}}, ({{ecol.measure}})</v-list-item-subtitle>
+        </v-list-item-title>
+      </v-list-item-content>
+    </v-list-item>
     </template>
   </v-data-table>
   </div>
@@ -144,6 +140,7 @@ export default {
             return {
               'id': pk.idpack,
               'name': pk.pack_name,
+              'ecolkoeff': app.ecolkoeff,
               'materials': app.materials.map(function(material){
                 let mass = 0;
                 app.weight.forEach(function(w){
@@ -159,6 +156,7 @@ export default {
                       'idecol': e.idecol,
                       'name': e.ecol_name,
                       'value': e.ecol_value,
+                      'measure': e.ecol_measure
                     }
                     ecolcharacts.push(tmp);
                   }
@@ -168,7 +166,6 @@ export default {
                   'idmaterials': material.idmaterials,
                   'name': material.material_name,
                   'mass': mass,
-                  'ecolkoeff': app.ecolkoeff,
                   'ecolcharacts': ecolcharacts
                 }
               }),
@@ -202,7 +199,7 @@ export default {
         this.dialog = true
       },
       deleteItem (item, funcDelete) {
-        const index = this.packages.indexOf(item)
+        const index = this.packages.indexOf(item.id)
         confirm('Are you sure you want to delete this item?') && this.packages.splice(index, 1)
         funcDelete(item)
       },
