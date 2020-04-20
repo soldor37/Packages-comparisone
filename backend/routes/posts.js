@@ -76,7 +76,7 @@ router.get('/', function (req, res) {
 });
 
 router.get('/ecol_dict', function (req, res) {
-    let sql = "SELECT distinct ecol_name FROM ecol_charact;";
+    let sql = `SELECT DISTINCT ecol_name, ecol_measure FROM ecol_charact;`;
     return new Promise(async (resolve, reject) => {
         let data = await connection.find(sql);
         res.send(data);

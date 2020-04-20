@@ -82,13 +82,12 @@
                                     <template v-slot:expanded-item="{ kk, item }" >                                        
                                         <v-list-item>
                                             <v-list-item-content> 
-                                                <v-list-item-title v-for="(el, key) in item.ecols" v-bind:key="key">
-                                                    {{el.ecol_name}}
+                                                <v-list-item-title v-for="(el, key) in item.ecols[item.name]" v-bind:key="key">
+                                                    {{key}}
                                                     <!-- {{el.ecol_measure}} -->
-                                                    <v-text-field v-model="item[el.ecol_name]" label="Value"></v-text-field>
+                                                    <v-text-field :label="el" disabled></v-text-field>
                                                 </v-list-item-title>
                                             </v-list-item-content>
-                                            
                                         </v-list-item>
                                     </template>
 
@@ -216,6 +215,19 @@ export default {
     };
   },
   computed: {
+      ecol_pack_material(){
+        let tmp = {};
+        this.materials.forEach(mat => {         
+          tmp[mat.material_name] = {};
+          this.ecolchar.forEach(ecol => {
+              if(mat.idmaterials == ecol.fk_id_material){
+                tmp[mat.material_name][ecol.ecol_name] = ecol.ecol_value;
+              }
+          })          
+        })
+        return tmp;
+      },
+
       formTitle () {
         return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
       },
@@ -224,7 +236,7 @@ export default {
               return {
                   name: el,
                   value: 0,
-                  ecols: this.ecoldict
+                  ecols: this.ecol_pack_material
               };
           })
       },
@@ -484,7 +496,7 @@ export default {
         });
     },
     getEcolDict() {
-        var app = this;
+      var app = this;
       var hostname = window.location.hostname;
       axios
         .get(`http://${hostname}:3000/posts/ecol_dict`)
