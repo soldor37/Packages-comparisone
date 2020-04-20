@@ -83,12 +83,9 @@
                                         <v-list-item>
                                             <v-list-item-content> 
                                                 <v-list-item-title v-for="(el, key) in item.ecols" v-bind:key="key">
-                                                    {{el.ecol_name}}
-                                                    <!-- {{el.ecol_measure}} -->
-                                                    <v-text-field v-model="el.value" label="Value"></v-text-field>
+                                                    {{el.ecol_name}} : {{el.value}}
                                                 </v-list-item-title>
                                             </v-list-item-content>
-                                            
                                         </v-list-item>
                                     </template>
 
@@ -462,7 +459,7 @@ export default {
         });
     },
     getEcolDict() {
-        var app = this;
+      var app = this;
       var hostname = window.location.hostname;
       axios
         .get(`http://${hostname}:3000/posts/ecol_dict`)
