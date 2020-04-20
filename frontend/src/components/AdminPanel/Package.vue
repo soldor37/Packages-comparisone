@@ -367,13 +367,8 @@ export default {
 
                 })
             }
-            console.log(new_pack);
-
+            funcInsert(new_pack)
             
-
-
-            //funcInsert(this.editedItem)
-            //
         }
         this.close()
         

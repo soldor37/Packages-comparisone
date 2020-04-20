@@ -117,7 +117,7 @@ export default {
       editedItem: {
       },
       defaultItem: {
-        pack_name: '',
+        
       },
       materials: [],
       ecolchar: [],
