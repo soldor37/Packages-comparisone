@@ -26,8 +26,8 @@ export default {
   // },
   data() {
     return {
-      selectedPack1: 1,
-      selectedPack2: 2,
+      selectedPack1: 28,
+      selectedPack2: 29,
       chart1: {
         series:[],
         chartOptions: {
@@ -86,7 +86,7 @@ export default {
           },
           xaxis: {
             categories: [
-              "air, m^2",
+              "air, m^3",
               "water, l",
               "energy, MJ",
               "oil consumption, l"

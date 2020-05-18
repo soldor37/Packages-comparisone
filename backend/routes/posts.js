@@ -95,7 +95,7 @@ router.post('/insert', function (req, res) {
                 lastID = result.insertId;
                 //console.log(lastID)
                 req.body.materials.forEach(function (mat) {
-                    connection.find(`INSERT INTO material_weight(fk_id_pack, fk_id_material, material_weight) VALUES('${lastID}', '${mat.id}','${mat.value}');`)
+                    connection.find(`INSERT INTO material_weight(fk_packaging, fk_materials, material_weight) VALUES('${lastID}', '${mat.id}','${mat.value}');`)
                 })
             })
             .then(result => {
@@ -116,7 +116,7 @@ router.post('/delete', function (req, res) {
         await connection.del(sql);
         let conn = await connection.connect();
         materials.forEach(function (mat) {
-            conn.promise().query(`DELETE FROM material_weight WHERE fk_id_pack = '${req.body.id}';`)
+            conn.promise().query(`DELETE FROM material_weight WHERE fk_packaging = '${req.body.id}';`)
                 .then(result => {
                     conn.release();
                 })
@@ -133,18 +133,12 @@ router.post('/edit', function (req, res) {
     console.log(req.body)
     let sql1 = `UPDATE packaging SET pack_name = '${req.body.name}' WHERE idpack = '${req.body.id}';`
     let materials = req.body.materials;
-    let ecolkoeff = req.body.ecolkoeff;
     return new Promise(async (resolve, reject) => {
         await connection.update(sql1); //вносим изменения в таблицу названий упаковок
         return new Promise(async (resolve, reject) => {
             let conn = await connection.connect();
             materials.forEach(function (mat) {
-                conn.promise().query(`UPDATE material_weight SET material_weight = '${mat.mass}' WHERE fk_id_pack = '${req.body.id}' and fk_id_material = '${mat.idmaterials}';`)
-                    .then(result => {
-                        ecolkoeff.forEach(function (eco) {
-                            conn.promise().query(`UPDATE ecol_criteria SET value = '${eco.value}' WHERE idecol_criteria = '${eco.idecol_criteria}';`)
-                        });
-                    })
+                conn.promise().query(`UPDATE material_weight SET material_weight = '${mat.mass}' WHERE fk_packaging = '${req.body.id}' and fk_materials = '${mat.idmaterials}';`)
                     .then(result => {
                         conn.release();
                     })
@@ -164,20 +158,20 @@ router.post('/insertMaterial', function (req, res) {
     //console.log(req.body)
     let ecol_dict = [
         {
-            'name': 'air',
-            'message': 'm^3/kg'
+            'name': 'CO2',
+            'idecol': '14'
         },
         {
-            'name': 'water',
-            'message': 'l/kg'
+            'name': 'Water',
+            'idecol': '15'
         },
         {
-            'name': 'energy',
-            'message': 'MJ/kg'
+            'name': 'Energy',
+            'idecol': '13'
         },
         {
-            'name': 'oil',
-            'message': 'l/kg'
+            'name': 'OilConsumption',
+            'idecol': '16'
         },
     ]
     return new Promise(async (resolve, reject) => {
@@ -190,7 +184,7 @@ router.post('/insertMaterial', function (req, res) {
                 //console.log(lastID)
                 ecol_dict.forEach(function (eco) {
                     //console.log(`INSERT INTO ecol_charact(ecol_name, fk_id_material, ecol_value, ecol_measure) VALUES('${eco.name}', '${lastID}','${req.body[eco.name]}','${eco.message}');`)
-                    connection.find(`INSERT INTO ecol_charact(ecol_name, fk_id_material, ecol_value, ecol_measure) VALUES('${eco.name}', '${lastID}','${req.body[eco.name]}','${eco.message}');`)
+                    connection.find(`INSERT INTO ecolchar_value(ecol_value, fk_ecol_charact, fk_materials) VALUES('${req.body[eco.name]}','${eco.idecol}','${lastID}');`)
                 })
             })
             .then(result => {
@@ -209,7 +203,7 @@ router.post('/deleteMaterial', function (req, res) {
     return new Promise(async (resolve, reject) => {
         await connection.del(sql);
         let conn = await connection.connect();
-        conn.promise().query(`DELETE FROM ecol_charact WHERE fk_id_material = '${req.body.idmaterials}';`)
+        conn.promise().query(`DELETE FROM ecolchar_value WHERE fk_materials = '${req.body.idmaterials}';`)
             .then(result => {
                 conn.release();
             })
@@ -222,22 +216,23 @@ router.post('/deleteMaterial', function (req, res) {
 });
 
 router.post('/editMaterial', function (req, res) {
-    let sql = `UPDATE materials SET material_name = '${req.body.name}' WHERE idmaterials = '${req.body.idmaterials}';`;
-    return new Promise(async (resolve, reject) => {
-        await connection.update(sql);
+       return new Promise(async (resolve, reject) => {
         let conn = await connection.connect();
-        req.body.ecolcharacts.forEach(function (eco) {
-            conn.promise().query(`UPDATE ecol_charact SET ecol_value = '${eco.value}' WHERE idecol = '${eco.idecol}';`)
-                .then(result => {
-                    conn.release();
+        conn.promise().query(`UPDATE materials SET material_name = '${req.body.name}' WHERE idmaterials = '${req.body.idmaterials}';`,
+            function (err, result) {
+                if (err) throw err;
+                req.body.ecolcharacts.forEach(function (eco) {
+                    connection.find(`UPDATE ecolchar_value SET ecol_value = '${eco.value}' WHERE fk_materials = '${req.body.idmaterials}' AND fk_ecol_charact = '${eco.idecol}';`)
                 })
-                .catch(function (err) {
-                    console.log(err.message);
-                });
-        })
+            })
+            .then(result => {
+                conn.release();
+            })
+            .catch(function (err) {
+                console.log(err.message);
+            });
         res.send('Data edit received');
     });
-
 });
 // ---------------------Расчеты для сравнения--------------------------
 router.post('/calc', function (req, res) {
@@ -310,7 +305,7 @@ async function calcFormula2(packid) {
     return Promise.resolve(ObjectGraph);
 
 }
-//Считает сумму абсолютных значений экологических характеристик выбранных упаковок для значенателя второй формулы
+//Считает сумму абсолютных значений экологических характеристик выбранных упаковок для знаменателя второй формулы
 async function calcFormula1(packid) {
     ObjectEcos.comparativeWeight = [];
     for (let variable in packid) {
@@ -336,16 +331,17 @@ async function getWeightMaterial(idpack) {
     let conn = await connection.connect();
     return new Promise((resolve, reject) => {
         //console.log("За инфой Пришла пачка -",idpack);
-        conn.promise().query(`SELECT
-        material_weight.fk_id_material, ecol_name, ecol_value, material_weight, fk_id_pack
-        FROM
-        mydb.ecol_charact
-        inner join
-        material_weight
-        on
-        ecol_charact.fk_id_material = material_weight.fk_id_material
-        where
-        material_weight.fk_id_pack = `+ idpack)
+        conn.promise().query(`SELECT 
+        materials.idmaterials, ecol_charact.ecol_name, ecol_value, material_weight.material_weight, material_weight.fk_packaging
+    FROM
+        ecolchar_value
+            JOIN
+        ecol_charact ON idecol = fk_ecol_charact
+            JOIN
+        materials ON idmaterials = fk_materials
+         JOIN
+        material_weight ON idmaterials = material_weight.fk_materials
+        where material_weight.fk_packaging = `+ idpack)
             .then(result => {
                 ObjectEcos.weightMaterial = result[0];
             })
@@ -392,23 +388,23 @@ router.get('/DBmaterials', function (req, res) {
 });
 //таблица весов материалов
 router.get('/DBweight', function (req, res) {
-    let sql = "SELECT * FROM mydb.material_weight;"
+    let sql = "SELECT * FROM material_weight;"
     return new Promise(async (resolve, reject) => {
         let data = await connection.find(sql);
         res.send(data);
     });
 });
-//таблица экологических характеристик
+//таблица названий экологических характеристик + критерии
 router.get('/DBecolchar', function (req, res) {
-    let sql = "SELECT * FROM mydb.ecol_charact;"
+    let sql = "SELECT idecol, ecol_measure, ecol_value, fk_materials, ecol_charact.ecol_name FROM ecolchar_value JOIN ecol_charact on fk_ecol_charact = idecol;"
     return new Promise(async (resolve, reject) => {
         let data = await connection.find(sql);
         res.send(data);
     });
 });
-//таблица экол критериев (коэфф)
-router.get('/DBecolkoeff', function (req, res) {
-    let sql = "SELECT * FROM mydb.ecol_criteria;"
+//таблица значений экол характеристик
+router.get('/DBecolvalue', function (req, res) {
+    let sql = "SELECT * FROM ecolchar_value;"
     return new Promise(async (resolve, reject) => {
         let data = await connection.find(sql);
         res.send(data);

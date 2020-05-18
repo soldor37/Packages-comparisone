@@ -100,28 +100,28 @@
                     <v-col cols="12" sm="8" md="8">
                       <v-text-field v-model="editedItem.name" label="Package name"></v-text-field>
                       <div v-for="(mat, mat_key) in editedItem.materials" v-bind:key="mat_key">
+                        <template v-if="editedItem.materials[mat_key].mass > 0"> 
                         <v-text-field
                           v-model="editedItem.materials[mat_key].mass"
                           :label="mat.name + ', (kg)'"
                         ></v-text-field>
-                        <br />
-                        <v-text-field
+                        <!-- <v-text-field
                           class="ml-5"
                           v-for="(eco, eco_key) in mat.ecolcharacts"
                           v-model="editedItem.materials[mat_key].ecolcharacts[eco_key].value"
                           :label="eco.name +', ('+ eco.measure+')'"
                           v-bind:key="eco_key"
-                        ></v-text-field>
-                        <br />
+                        ></v-text-field> -->
+                        </template>
                       </div>
-                      <div>
+                      <!-- <div>
                         <v-text-field
-                          v-for="(koeff, koeff_key) in editedItem.ecolkoeff"
+                          v-for="(koeff, koeff_key) in editedItem.ecolvalue"
                           v-bind:key="koeff_key"
-                          v-model="editedItem.ecolkoeff[koeff_key].value"
+                          v-model="editedItem.ecolvalue[koeff_key].value"
                           :label="editedItem.materials[0].ecolcharacts[koeff_key].name + ' criteria'"
                         ></v-text-field>
-                      </div>
+                      </div>-->
                     </v-col>
                   </v-row>
                 </v-container>
@@ -144,7 +144,18 @@
       </template>
       <!--Выпадающий список для элементов таблицы-->
       <template v-slot:expanded-item="{ headers, item }">
-        <v-list-item two-line>
+        <v-list-item-title two-line v-for="(mat, key) in item.materials" v-bind:key="key">
+          <template v-if="mat.mass > 0">
+            {{mat.name }} : {{mat.mass}}, (kg)
+            <v-list-item-subtitle
+              v-for="(ecol, eco_key) in mat.ecolcharacts"
+              v-bind:key="eco_key"
+            >{{ecol.name}} : {{ecol.value}}, ({{ecol.measure}})</v-list-item-subtitle>
+            <v-divider inset></v-divider>
+          </template>
+        </v-list-item-title>
+
+        <!-- <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-for="(mat, key) in item.materials" v-bind:key="key">
               {{mat.name }} : {{mat.mass}}, (kg)
@@ -154,7 +165,7 @@
               >{{ecol.name}} : {{ecol.value}}, ({{ecol.measure}})</v-list-item-subtitle>
             </v-list-item-title>
           </v-list-item-content>
-        </v-list-item>
+        </v-list-item>-->
       </template>
     </v-data-table>
   </div>
@@ -205,7 +216,7 @@ export default {
       select_materials: [],
       weight: [],
       ecolchar: [],
-      ecolkoeff: [],
+      ecolvalue: [],
       ecoldict: []
     };
   },
@@ -215,7 +226,7 @@ export default {
       this.materials.forEach(mat => {
         tmp[mat.material_name] = {};
         this.ecolchar.forEach(ecol => {
-          if (mat.idmaterials == ecol.fk_id_material) {
+          if (mat.idmaterials == ecol.fk_materials) {
             tmp[mat.material_name][ecol.ecol_name] = ecol.ecol_value;
           }
         });
@@ -259,20 +270,11 @@ export default {
         return {
           id: pk.idpack,
           name: pk.pack_name,
-          ecolkoeff: app.ecolkoeff,
+          ecolvalue: app.ecolvalue,
           materials: app.materials.map(function(material) {
-            let mass = 0;
-            app.weight.forEach(function(w) {
-              if (
-                w.fk_id_pack == pk.idpack &&
-                w.fk_id_material == material.idmaterials
-              ) {
-                mass = w.material_weight;
-              }
-            });
             let ecolcharacts = [];
             app.ecolchar.forEach(function(e) {
-              if (e.fk_id_material == material.idmaterials) {
+              if (e.fk_materials == material.idmaterials) {
                 let tmp = {
                   idecol: e.idecol,
                   name: e.ecol_name,
@@ -282,7 +284,15 @@ export default {
                 ecolcharacts.push(tmp);
               }
             });
-
+            let mass = 0;
+            app.weight.forEach(function(w) {
+              if (
+                w.fk_packaging == pk.idpack &&
+                w.fk_materials == material.idmaterials
+              ) {
+                mass = w.material_weight;
+              }
+            });
             return {
               idmaterials: material.idmaterials,
               name: material.material_name,
@@ -308,7 +318,7 @@ export default {
       this.getMaterials();
       this.getWeight();
       this.getEcolchar();
-      this.getEcolkoeff();
+      this.getEcolvalue();
       this.getEcolDict();
     },
     saveInput() {
@@ -330,12 +340,12 @@ export default {
       console.log("Dialog closed");
     },
     editItem(item) {
-      this.editedIndex = item.id;
+      this.editedIndex = this.packfull.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
     deleteItem(item, funcDelete) {
-      const index = this.packages.indexOf(item.id);
+      const index = this.packfull.indexOf(item);
       confirm("Are you sure you want to delete this item?") &&
         this.packages.splice(index, 1);
       funcDelete(item);
@@ -473,14 +483,14 @@ export default {
           console.log(error);
         });
     },
-    getEcolkoeff() {
+    getEcolvalue() {
       var app = this;
       var hostname = window.location.hostname;
       axios
-        .get(`http://${hostname}:3000/posts/DBecolkoeff`)
+        .get(`http://${hostname}:3000/posts/DBecolvalue`)
         .then(response => {
           console.log(response);
-          app.ecolkoeff = response.data;
+          app.ecolvalue = response.data;
         })
         .catch(error => {
           alert(error + "\n Failed connect to DB");
