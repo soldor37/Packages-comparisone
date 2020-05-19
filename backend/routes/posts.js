@@ -248,6 +248,13 @@ var ObjectEcos = {
     weightMaterial: [],
     calculated: [],
     comparativeWeight: [],
+    criteria: {
+        Energy : 0,
+        CO2 : 0,
+        Water : 0,
+        OilConsumption : 0
+    },
+    totalIndex: []
 }
 var ObjectGraph = [];
 
@@ -274,12 +281,12 @@ async function calcFormula2(packid) {
         await getPacks(packid[variable]);
         ObjectGraph[variable].name = ObjectEcos.packs[0].pack_name;
         await getWeightMaterial(packid[variable]);
-        var end_value = 0;
+        var end_value = 0; //промежуточное значение
         ObjectEcos.weightMaterial.forEach(function (key) {
             var name = key.ecol_name;
             var weight = key.material_weight;
             var value = key.ecol_value;
-            end_value = value * weight;
+            end_value = value * weight; 
 
             if (typeof ObjectEcos.calculated[variable] == 'undefined') {
                 ObjectEcos.calculated[variable] = [];
@@ -290,18 +297,37 @@ async function calcFormula2(packid) {
             ObjectEcos.calculated[variable][name] += Number(end_value);
         })
     }
+    //создаем переменную с критериями в удобном формате
+    let ecol_count = 0;
+    for (name in ObjectEcos.criteria){
+        ObjectEcos.criteria[name] = ObjectEcos.weightMaterial[ecol_count].ecol_criteria;
+        ecol_count++;
+    }
+
     for (key in ObjectEcos.calculated) {
+        ObjectEcos.totalIndex[key] = 0;
         for (let name in ObjectEcos.calculated[key]) {
             ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]);
+            ObjectEcos.totalIndex[key] = ObjectEcos.totalIndex[key] + ObjectEcos.calculated[key][name] * ObjectEcos.criteria[name];
             if (typeof ObjectGraph[key].data == 'undefined') {
                 ObjectGraph[key].data = [];
             }
             ObjectGraph[key].data.push((Number(ObjectEcos.calculated[key][name])).toFixed(3));
         }
-
     }
-    console.log(ObjectGraph);
+    // считаем сумму по всем упаковкам для 3 формулы
+    let IndexSum = 0;
+    ObjectEcos.totalIndex.forEach(function(key){
+        IndexSum = IndexSum + key;
+    })
+    for (key in ObjectEcos.calculated) {
+        ObjectEcos.totalIndex[key] = ObjectEcos.totalIndex[key] / IndexSum;
+        ObjectGraph[key].data.push((Number(ObjectEcos.totalIndex[key])).toFixed(3));
+    }
+    //console.log(ObjectEcos.criteria);
+    //console.log(ObjectEcos.totalIndex);
     //console.log(ObjectEcos.calculated);
+    console.log(ObjectGraph);
     return Promise.resolve(ObjectGraph);
 
 }
@@ -332,7 +358,7 @@ async function getWeightMaterial(idpack) {
     return new Promise((resolve, reject) => {
         //console.log("За инфой Пришла пачка -",idpack);
         conn.promise().query(`SELECT 
-        materials.idmaterials, ecol_charact.ecol_name, ecol_value, material_weight.material_weight, material_weight.fk_packaging
+        materials.idmaterials, ecol_charact.ecol_name, ecol_charact.ecol_criteria, ecol_value, material_weight.material_weight, material_weight.fk_packaging
     FROM
         ecolchar_value
             JOIN
@@ -366,7 +392,7 @@ async function getPacks(idpack) {
                 ObjectEcos.packs = result[0];
             })
             .then(result => {
-                console.log(ObjectEcos.packs);
+                //console.log(ObjectEcos.packs);
                 resolve(ObjectEcos.packs);
                 conn.release();
             })

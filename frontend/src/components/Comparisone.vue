@@ -86,10 +86,11 @@ export default {
           },
           xaxis: {
             categories: [
-              "air, m^3",
-              "water, l",
-              "energy, MJ",
-              "oil consumption, l"
+              "Energy, MJ",
+              "CO2, m^3",
+              "Water, l",
+              "Oil consumption, l",
+              "Total index"
             ]
           },
           yaxis: {
