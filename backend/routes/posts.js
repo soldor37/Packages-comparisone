@@ -252,7 +252,9 @@ var ObjectEcos = {
         Energy : 0,
         CO2 : 0,
         Water : 0,
-        OilConsumption : 0
+        OilConsumption : 0,
+        Garbage: 0,
+        WaterConsumption: 0
     },
     totalIndex: []
 }
@@ -327,7 +329,7 @@ async function calcFormula2(packid) {
     //console.log(ObjectEcos.criteria);
     //console.log(ObjectEcos.totalIndex);
     //console.log(ObjectEcos.calculated);
-    console.log(ObjectGraph);
+    //console.log(ObjectGraph);
     return Promise.resolve(ObjectGraph);
 
 }

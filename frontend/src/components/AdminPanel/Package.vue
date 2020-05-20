@@ -80,9 +80,8 @@
                                 v-for="(el, key) in item.ecols[item.name]"
                                 v-bind:key="key"
                               >
-                                {{key}}
+                                {{key}} : {{el}}
                                 <!-- {{el.ecol_measure}} -->
-                                <v-text-field :label="el" disabled></v-text-field>
                               </v-list-item-title>
                             </v-list-item-content>
                           </v-list-item>
