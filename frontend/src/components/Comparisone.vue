@@ -2,17 +2,31 @@
   <div id="comparisone">
     <router-view></router-view>
     <b-container class="mt-2">
+      <v-col cols="12" sm="2">
+        <v-subheader v-text="'Select an existing or create a new package group'"></v-subheader>
+      </v-col>
       <b-row>
         <b-col cols="4">
           <v-container fluid>
             <v-row align="center">
+              <!-- выбор группы упаковок -->
               <v-col cols="12" sm="6">
-                <v-subheader v-text="'Select packages for comparisone'"></v-subheader>
+                <v-select
+                  v-model="selectedGroup"
+                  :items="packGroups"
+                  item-value= "packs"
+                  item-text="name"
+                  :menu-props="{ maxHeight: '400' }"
+                  label="Select"
+                  outlined
+
+                ></v-select>
               </v-col>
+              <!-- выбор упаковки в группе -->
               <v-col cols="12" sm="6">
                 <v-select
                   v-model="selectedPack"
-                  :items="packages"
+                  :items= selectedGroup
                   item-value="idpack"
                   item-text="pack_name"
                   :menu-props="{ maxHeight: '400' }"
@@ -20,7 +34,7 @@
                   multiple
                   chips
                   outlined
-                  hint="Pick more than 1 packages"
+                  hint="Pick more than 1 package"
                   persistent-hint
                 ></v-select>
               </v-col>
@@ -36,7 +50,7 @@
             </v-card-title>
 
             <v-tabs v-model="tab" background-color="transparent" grow>
-              <v-tab v-for="item in items" :key="item">{{ item }}</v-tab>
+              <v-tab v-for="item in tabs" :key="item">{{ item }}</v-tab>
             </v-tabs>
 
             <v-tabs-items v-model="tab">
@@ -50,9 +64,10 @@
                   <apexchart type="radar" :options="chart2.chartOptions" :series="chart1.series"></apexchart>
                 </v-card>
               </v-tab-item>
+              <!-- table tab -->
               <v-tab-item>
                 <v-card flat>
-                  <apexchart type="bar" :options="chart1.chartOptions" :series="chart1.series"></apexchart>
+                  <!-- <apexchart type="bar" :options="chart1.chartOptions" :series="chart1.series"></apexchart> -->
                 </v-card>
               </v-tab-item>
             </v-tabs-items>
@@ -76,7 +91,7 @@ export default {
   data() {
     return {
       tab: null,
-      items: ["Bar chart", "Radar chart", "Table"],
+      tabs: ["Bar chart", "Radar chart", "Table"],
       selectedPack: [],
       chart1: {
         series: [],
@@ -146,7 +161,7 @@ export default {
           },
           yaxis: {
             max: 1,
-            min:0,
+            min: 0,
             tickAmount: 6,
             decimalsInFloat: 2,
             title: {
@@ -159,7 +174,7 @@ export default {
           },
           fill: {
             opacity: 1
-          },
+          }
           // tooltip: {
           //   y: {
           //     formatter: function(val) {
@@ -183,13 +198,13 @@ export default {
           },
           title: {
             text: "Relative values of environmental characteristics",
-            align: 'center',
+            align: "center",
             margin: 10,
             offsetY: 50,
             style: {
-                fontSize: "15px",
-                //colors: ['#333']
-              }
+              fontSize: "15px"
+              //colors: ['#333']
+            }
           },
           stroke: {
             width: 2
@@ -212,26 +227,26 @@ export default {
             ],
             labels: {
               style: {
-              colors: [],
-              fontSize: '16px',
-              fontFamily: 'Helvetica, Arial, sans-serif',
-              fontWeight: 400,
-              cssClass: 'apexcharts-xaxis-label',
-          },
+                colors: [],
+                fontSize: "16px",
+                fontFamily: "Helvetica, Arial, sans-serif",
+                fontWeight: 400,
+                cssClass: "apexcharts-xaxis-label"
+              }
             }
           },
           yaxis: {
             max: 1,
-            min:0,
+            min: 0,
             tickAmount: 8,
             decimalsInFloat: 2,
             labels: {
               style: {
-              fontSize: '15px',
-              fontFamily: 'Helvetica, Arial, sans-serif',
-              fontWeight: 400,
-              cssClass: 'apexcharts-yaxis-label',
-          },
+                fontSize: "15px",
+                fontFamily: "Helvetica, Arial, sans-serif",
+                fontWeight: 400,
+                cssClass: "apexcharts-yaxis-label"
+              }
               // formatter: function(val) {
               //   return val.toFixed(2);
               // }
@@ -239,11 +254,19 @@ export default {
           }
         }
       },
-      packages: []
+      packages: [],
+      packGroups: [],
+      selectedGroup : undefined,      
     };
   },
+  // watch: {
+  //   pick(selectedPack) {
+  //     selectedPack = [];
+  //   }
+  // },
   created() {
     this.getPackages();
+    this.getGroups();
   },
   methods: {
     getPackages() {
@@ -261,12 +284,27 @@ export default {
           console.log(error);
         });
     },
+    getGroups() {
+      var app = this;
+      var hostname = window.location.hostname;
+      axios
+        .get(`http://${hostname}:3000/posts/groups`)
+        .then(response => {
+          console.log(response);
+          app.packGroups = response.data;
+        })
+        .catch(error => {
+          alert(error + "\n Ошибка подключения к базе данных");
+          console.log("-----error-------");
+          console.log(error);
+        });
+    },
     calc() {
       var app = this;
       var hostname = window.location.hostname;
       //let select = [app.selectedPack1, app.selectedPack2];
       let select = app.selectedPack;
-      console.log(select);
+      //console.log(select);
       axios
         .post(`http://${hostname}:3000/posts/calc`, {
           params: {
@@ -280,7 +318,14 @@ export default {
           console.log("-----error-------");
           console.log(error);
         });
-    }
+    },
+    // groupIndex(groups){
+    //   //console.log(groups,this.selectedGroup)
+    //   if (this.selectedGroup == 0){
+    //     this.selectedGroup = groups[0].idgroup
+    //   }
+    //   return groups.findIndex(i => i.idgroup === this.selectedGroup)  
+    // } 
   }
 };
 </script>

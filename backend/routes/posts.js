@@ -76,7 +76,80 @@ router.get('/', function (req, res) {
         res.send(data);
     });
 });
+router.get('/groups', function (req, res) {
+    let sql = `SELECT 
+    idpack, pack_name, fk_id_group, pack_groups.name
+FROM
+    packaging
+        JOIN
+    pack_combination ON id_pack = idpack
+        JOIN
+    pack_groups ON idpack_groups = fk_id_group`;
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        
+        let tmp = data.reduce((r, a) => {
+            r[a.fk_id_group] = [...r[a.fk_id_group] || [], a];
+            return r;
+        }, {})
 
+        tmp = Object.values(tmp);
+        let groups = tmp.map(combo => {
+            let ret = {
+                idgroup: combo[0].fk_id_group,
+                name: combo[0].name,
+                packs: []
+            };
+            combo.forEach(el => {
+                ret.packs.push({idpack:el.idpack, pack_name: el.pack_name})
+            });
+            return ret
+        })
+        //тоже самое, что выше, только некрасиво
+        //let groups = [];
+        // for (index in tmp){
+        //     let group = {
+        //         idgroup: null,
+        //         name: '',
+        //         packs: []
+        //     };
+        //     let tmpPack;
+        //     tmp[index].forEach(function (item) {
+        //         //console.log(item.fk_id_group)
+        //         if (group.idgroup == 0){
+        //             group.idgroup = item.fk_id_group;
+        //             group.name = item.name;
+        //             tmpPack = {
+        //                 idpack: item.idpack,
+        //                 pack_name: item.pack_name
+        //             }
+        //             group.packs.push(tmpPack);
+        //         }
+        //         else if(group.idgroup != item.fk_id_group){
+        //             groups.push(group);
+        //             group.idgroup = item.fk_id_group;
+        //             group.name = item.name;
+        //             tmpPack = {
+        //                 idpack: item.idpack,
+        //                 pack_name: item.pack_name
+        //             }
+        //             group.packs.push(tmpPack);
+        //         }
+        //         else{
+        //             tmpPack = {
+        //                 idpack: item.idpack,
+        //                 pack_name: item.pack_name
+        //             }
+        //             group.packs.push(tmpPack);
+        //         }
+                
+        //     });
+        // }
+        
+        //console.log(groups)
+        res.send(groups);
+    });
+});
 router.get('/ecol_dict', function (req, res) {
     let sql = `SELECT DISTINCT ecol_name, ecol_measure FROM ecol_charact;`;
     return new Promise(async (resolve, reject) => {
@@ -123,7 +196,7 @@ router.post('/delete', function (req, res) {
                 .catch(function (err) {
                     console.log(err.message);
                 });
-            
+
         });
         res.send('Data delete received');
     });
@@ -173,6 +246,14 @@ router.post('/insertMaterial', function (req, res) {
             'name': 'OilConsumption',
             'idecol': '16'
         },
+        {
+            'name': 'Garbage',
+            'idecol': '17'
+        },
+        {
+            'name': 'WaterConsumption',
+            'idecol': '18'
+        },
     ]
     return new Promise(async (resolve, reject) => {
         let lastID = 0;
@@ -216,7 +297,7 @@ router.post('/deleteMaterial', function (req, res) {
 });
 
 router.post('/editMaterial', function (req, res) {
-       return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         let conn = await connection.connect();
         conn.promise().query(`UPDATE materials SET material_name = '${req.body.name}' WHERE idmaterials = '${req.body.idmaterials}';`,
             function (err, result) {
@@ -249,10 +330,10 @@ var ObjectEcos = {
     calculated: [],
     comparativeWeight: [],
     criteria: {
-        Energy : 0,
-        CO2 : 0,
-        Water : 0,
-        OilConsumption : 0,
+        Energy: 0,
+        CO2: 0,
+        Water: 0,
+        OilConsumption: 0,
         Garbage: 0,
         WaterConsumption: 0
     },
@@ -288,7 +369,7 @@ async function calcFormula2(packid) {
             var name = key.ecol_name;
             var weight = key.material_weight;
             var value = key.ecol_value;
-            end_value = value * weight; 
+            end_value = value * weight;
 
             if (typeof ObjectEcos.calculated[variable] == 'undefined') {
                 ObjectEcos.calculated[variable] = [];
@@ -301,7 +382,7 @@ async function calcFormula2(packid) {
     }
     //создаем переменную с критериями в удобном формате
     let ecol_count = 0;
-    for (name in ObjectEcos.criteria){
+    for (name in ObjectEcos.criteria) {
         ObjectEcos.criteria[name] = ObjectEcos.weightMaterial[ecol_count].ecol_criteria;
         ecol_count++;
     }
@@ -319,7 +400,7 @@ async function calcFormula2(packid) {
     }
     // считаем сумму по всем упаковкам для 3 формулы
     let IndexSum = 0;
-    ObjectEcos.totalIndex.forEach(function(key){
+    ObjectEcos.totalIndex.forEach(function (key) {
         IndexSum = IndexSum + key;
     })
     for (key in ObjectEcos.calculated) {
