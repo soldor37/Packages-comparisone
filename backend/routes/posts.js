@@ -315,6 +315,71 @@ router.post('/editMaterial', function (req, res) {
         res.send('Data edit received');
     });
 });
+// ---------------------группы упаковок-----------------
+router.post('/newGroup', function (req, res) {
+    return new Promise(async (resolve, reject) => {
+        let lastID = 0;
+        let conn = await connection.connect();
+        conn.promise().query(`INSERT INTO pack_groups(name) VALUES('${req.body.groupName}')`,
+            function (err, result) {
+                if (err) throw err;
+                lastID = result.insertId;
+                //console.log(lastID)
+                req.body.packIDs.forEach(function (pack) {
+                    connection.find(`INSERT INTO pack_combination(id_pack, fk_id_group) VALUES('${pack}', '${lastID}');`)
+                })
+            })
+            .then(result => {
+                conn.release();
+            })
+            .catch(function (err) {
+                console.log(err.message);
+            });
+        res.send('Data insert received');
+    });
+});
+//удаление группы упаковок
+router.post('/deleteGroup', function (req, res) {
+    let sql = `DELETE FROM pack_groups WHERE idpack_groups = '${req.body.idgroup}';`;
+    return new Promise(async (resolve, reject) => {
+        await connection.del(sql);
+        let conn = await connection.connect();
+        req.body.packs.forEach(function () {
+            conn.promise().query(`DELETE FROM pack_combination WHERE fk_id_group = '${req.body.idgroup}';`)
+                .then(result => {
+                    conn.release();
+                })
+                .catch(function (err) {
+                    console.log(err.message);
+                });
+
+        });
+        res.send('Data delete received');
+    });
+});
+//редактирование группы упаковок
+// router.post('/editGroup', function (req, res) {
+//     let sql = `UPDATE pack_groups SET name = '${req.body.name}' WHERE idpack_groups = '${req.body.idgroup}';`
+//     return new Promise(async (resolve, reject) => {
+//         await connection.update(sql); //вносим изменения в таблицу названий упаковок
+//         return new Promise(async (resolve, reject) => {
+//             let conn = await connection.connect();
+//             req.body.packs.forEach(function (pack) {
+//                 //нужно учитывать, что при редактировании группы можно добавить больше упаковок в группы, чем было до этого, поэтому помимо update требуется insert, тут этого не сделано
+//                 conn.promise().query(`UPDATE pack_combination SET id_pack = '${pack.idpack}' WHERE fk_id_group = '${req.body.idgroup}' and idpack_combination = '${??}';`)
+//                     .then(result => {
+//                         conn.release();
+//                     })
+//                     .catch(function (err) {
+//                         console.log(err.message);
+//                     });
+//             })
+
+//             res.send('Data edit received');
+//         });
+
+//     });
+// });
 // ---------------------Расчеты для сравнения--------------------------
 router.post('/calc', function (req, res) {
     let packid = req.body.params.ID;

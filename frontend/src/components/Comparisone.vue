@@ -2,9 +2,6 @@
   <div id="comparisone">
     <router-view></router-view>
     <b-container class="mt-2">
-      <v-col cols="12" sm="2">
-        <v-subheader v-text="'Select an existing or create a new package group'"></v-subheader>
-      </v-col>
       <b-row>
         <b-col cols="4">
           <v-container fluid>
@@ -14,19 +11,20 @@
                 <v-select
                   v-model="selectedGroup"
                   :items="packGroups"
-                  item-value= "packs"
+                  item-value="packs"
                   item-text="name"
                   :menu-props="{ maxHeight: '400' }"
                   label="Select"
                   outlined
-
+                  hint="Select an existing package group" 
+                  persistent-hint
                 ></v-select>
               </v-col>
               <!-- выбор упаковки в группе -->
               <v-col cols="12" sm="6">
                 <v-select
                   v-model="selectedPack"
-                  :items= selectedGroup
+                  :items="selectedGroup"
                   item-value="idpack"
                   item-text="pack_name"
                   :menu-props="{ maxHeight: '400' }"
@@ -40,8 +38,51 @@
               </v-col>
             </v-row>
           </v-container>
-          <b-button size="lg" variant="outline-dark" @click="calc();">Calculate</b-button>
+          <v-col>
+            <hr />
+            <v-subheader v-text="'Create a new package group'"></v-subheader>
+            <b-button size="md" variant="outline-dark" @click.stop="dialog = true">New comparisone</b-button>
+            <v-divider class="mx-10" :inset="false" vertical></v-divider>
+            <hr />
+            <b-button size="lg" variant="outline-dark" @click="calc();">Calculate</b-button>
+          </v-col>
         </b-col>
+        <!-- доавление новой группы -->
+        <v-dialog v-model="dialog" max-width="500px">
+            <v-card>
+              <v-card-title>
+                <span class="headline">Select packages for new comparisone</span>
+              </v-card-title>
+                <v-container>
+                  <v-row>
+                    <v-col cols="12">
+                      <v-text-field v-model="newGroup.groupName" 
+                      label="Comparisone name" 
+                      hint="You can fill this field later, if you decide to save comparisone"
+                      persistent-hint></v-text-field>
+                      <hr>
+                      <v-autocomplete
+                        v-model="selectedGroup"
+                        :items="packages"
+                        item-text= "pack_name"
+                        item-value= item
+                        outlined
+                        dense
+                        label="Packages"
+                        multiple
+                      ></v-autocomplete>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn :absolute="true" :left="true" color="blue darken-1" text @click="dialog = false">Cancel</v-btn>
+                <v-btn color="light-blue lighten-4" :disabled="btnSaveSelection" @click="saveGroup()">Save group</v-btn>
+                <v-btn color="blue darken-1" text @click="createGroup">Save</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        
         <!-- графики -->
         <b-col cols="8">
           <v-card>
@@ -92,7 +133,18 @@ export default {
     return {
       tab: null,
       tabs: ["Bar chart", "Radar chart", "Table"],
+      packages: [],
       selectedPack: [],
+      packGroups: [],
+      selectedGroup: undefined,
+      btnSaveSelection: false,
+
+      newGroup: {
+        groupName: '',
+        packIDs: []
+      },
+      dialog: false,
+
       chart1: {
         series: [],
         chartOptions: {
@@ -254,16 +306,31 @@ export default {
           }
         }
       },
-      packages: [],
-      packGroups: [],
-      selectedGroup : undefined,      
+      
     };
   },
-  // watch: {
-  //   pick(selectedPack) {
-  //     selectedPack = [];
-  //   }
-  // },
+  watch: {
+    // newGroup: function(){
+    //   this.btnSaveSelection = false
+    //   // if(this.newGroup.groupName != "" && this.newGroup.packIDs.lenght >=2){
+    //   //   this.btnSaveSelection = false
+    //   // }
+    //   // else{
+    //   //   this.btnSaveSelection = true
+    //   // }
+    // },
+    selectedGroup: function() {
+      this.selectedPack = [];
+      let tmp = [];
+      this.selectedGroup.map(function(item){
+        tmp.push(item.idpack)
+      })
+      this.newGroup.packIDs = tmp;
+    },
+    dialog(val) {
+      val || this.close();
+    }
+  },
   created() {
     this.getPackages();
     this.getGroups();
@@ -275,7 +342,7 @@ export default {
       axios
         .get(`http://${hostname}:3000/posts`)
         .then(response => {
-          console.log(response);
+          //console.log(response);
           app.packages = response.data;
         })
         .catch(error => {
@@ -290,7 +357,7 @@ export default {
       axios
         .get(`http://${hostname}:3000/posts/groups`)
         .then(response => {
-          console.log(response);
+          //console.log(response);
           app.packGroups = response.data;
         })
         .catch(error => {
@@ -302,7 +369,6 @@ export default {
     calc() {
       var app = this;
       var hostname = window.location.hostname;
-      //let select = [app.selectedPack1, app.selectedPack2];
       let select = app.selectedPack;
       //console.log(select);
       axios
@@ -319,13 +385,38 @@ export default {
           console.log(error);
         });
     },
+    saveGroup(){
+      var app = this;
+      var hostname = window.location.hostname;
+      //console.log(select);
+      axios
+        .post(`http://${hostname}:3000/posts/newGroup`, app.newGroup)
+        // .then(response => {
+        //   app.chart1.series = response.data;
+        // })
+        .catch(error => {
+          console.log("-----error-------");
+          console.log(error);
+        });
+    },
+    createGroup(){
+      let tmp = [];
+      this.selectedGroup.map(function(item){
+        tmp.push(item.idpack)
+      })
+      this.selectedPack = tmp;
+      this.dialog = false;
+    },
+    close() {
+      this.dialog = false;
+    },
     // groupIndex(groups){
     //   //console.log(groups,this.selectedGroup)
     //   if (this.selectedGroup == 0){
     //     this.selectedGroup = groups[0].idgroup
     //   }
-    //   return groups.findIndex(i => i.idgroup === this.selectedGroup)  
-    // } 
+    //   return groups.findIndex(i => i.idgroup === this.selectedGroup)
+    // }
   }
 };
 </script>

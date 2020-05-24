@@ -56,6 +56,13 @@
                 <v-list-item-action><v-icon ></v-icon></v-list-item-action>
               </router-link>
             </v-list-item>
+
+            <v-list-item>
+              <router-link to="/admin/groups">
+                <v-list-item-title >Package groups</v-list-item-title>
+                <v-list-item-action><v-icon ></v-icon></v-list-item-action>
+              </router-link>
+            </v-list-item>
           </v-list-group>
        </v-list>
     </v-navigation-drawer>
