@@ -16,7 +16,7 @@
                   :menu-props="{ maxHeight: '400' }"
                   label="Select"
                   outlined
-                  hint="Select an existing package group" 
+                  hint="Select an existing package group"
                   persistent-hint
                 ></v-select>
               </v-col>
@@ -49,40 +49,52 @@
         </b-col>
         <!-- доавление новой группы -->
         <v-dialog v-model="dialog" max-width="500px">
-            <v-card>
-              <v-card-title>
-                <span class="headline">Select packages for new comparisone</span>
-              </v-card-title>
-                <v-container>
-                  <v-row>
-                    <v-col cols="12">
-                      <v-text-field v-model="newGroup.groupName" 
-                      label="Comparisone name" 
-                      hint="You can fill this field later, if you decide to save comparisone"
-                      persistent-hint></v-text-field>
-                      <hr>
-                      <v-autocomplete
+          <v-card>
+            <v-card-title>
+              <span class="headline">Select packages for new comparisone</span>
+            </v-card-title>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="newGroup.groupName"
+                    label="Comparisone name"
+                    hint="You can fill this field later, if you decide to save comparisone"
+                    persistent-hint
+                  ></v-text-field>
+                  <hr />
+                  <v-autocomplete
                         v-model="selectedGroup"
                         :items="packages"
+                        return-object
                         item-text= "pack_name"
-                        item-value= item
                         outlined
                         dense
                         label="Packages"
                         multiple
-                      ></v-autocomplete>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn :absolute="true" :left="true" color="blue darken-1" text @click="dialog = false">Cancel</v-btn>
-                <v-btn color="light-blue lighten-4" :disabled="btnSaveSelection" @click="saveGroup()">Save group</v-btn>
-                <v-btn color="blue darken-1" text @click="createGroup">Save</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-        
+                  ></v-autocomplete>
+                </v-col>
+              </v-row>
+            </v-container>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                :absolute="true"
+                :left="true"
+                color="blue darken-1"
+                text
+                @click="dialog = false"
+              >Cancel</v-btn>
+              <v-btn
+                color="light-blue lighten-4"
+                :disabled="btnSaveSelection"
+                @click="saveGroup()"
+              >Save group</v-btn>
+              <v-btn color="blue darken-1" text @click="createGroup">Save</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
         <!-- графики -->
         <b-col cols="8">
           <v-card>
@@ -140,7 +152,7 @@ export default {
       btnSaveSelection: false,
 
       newGroup: {
-        groupName: '',
+        groupName: "",
         packIDs: []
       },
       dialog: false,
@@ -305,8 +317,7 @@ export default {
             }
           }
         }
-      },
-      
+      }
     };
   },
   watch: {
@@ -322,9 +333,9 @@ export default {
     selectedGroup: function() {
       this.selectedPack = [];
       let tmp = [];
-      this.selectedGroup.map(function(item){
-        tmp.push(item.idpack)
-      })
+      this.selectedGroup.map(function(item) {
+        tmp.push(item.idpack);
+      });
       this.newGroup.packIDs = tmp;
     },
     dialog(val) {
@@ -332,10 +343,13 @@ export default {
     }
   },
   created() {
-    this.getPackages();
-    this.getGroups();
+    this.getData();
   },
   methods: {
+    getData() {
+      this.getPackages();
+      this.getGroups();
+    },
     getPackages() {
       var app = this;
       var hostname = window.location.hostname;
@@ -385,31 +399,32 @@ export default {
           console.log(error);
         });
     },
-    saveGroup(){
+    saveGroup() {
       var app = this;
       var hostname = window.location.hostname;
-      //console.log(select);
+      this.dialog = false;
       axios
         .post(`http://${hostname}:3000/posts/newGroup`, app.newGroup)
-        // .then(response => {
-        //   app.chart1.series = response.data;
-        // })
+        .then(response => {
+          console.log(response);
+          this.getData();
+        })
         .catch(error => {
           console.log("-----error-------");
           console.log(error);
         });
     },
-    createGroup(){
+    createGroup() {
       let tmp = [];
-      this.selectedGroup.map(function(item){
-        tmp.push(item.idpack)
-      })
+      this.selectedGroup.map(function(item) {
+        tmp.push(item.idpack);
+      });
       this.selectedPack = tmp;
       this.dialog = false;
     },
     close() {
       this.dialog = false;
-    },
+    }
     // groupIndex(groups){
     //   //console.log(groups,this.selectedGroup)
     //   if (this.selectedGroup == 0){
