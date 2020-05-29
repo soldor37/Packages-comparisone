@@ -27,10 +27,11 @@ export default new Vuex.Store({
   },
   actions: {
     login({commit}, user){
+      var hostname = window.location.hostname;
       return new Promise((resolve, reject) => {
         commit('auth_request')
         axios
-        .post('http://localhost:3000/posts/login',user)
+        .post(`http://${hostname}:3000/posts/login`,user)
         .then(resp => {
           const token = resp.data.token
           const user = resp.data.user
@@ -48,9 +49,10 @@ export default new Vuex.Store({
       })
     },
     register({commit}, user){
+      var hostname = window.location.hostname;
       return new Promise((resolve, reject) => {
         commit('auth_request')
-        axios({url: 'http://localhost:3000/register', data: user, method: 'POST' })
+        axios({url: `http://${hostname}:3000/register`, data: user, method: 'POST' })
         .then(resp => {
           const token = resp.data.token
           const user = resp.data.user

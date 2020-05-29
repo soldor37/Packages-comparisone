@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config')
 
+let ObjectUsers = [];
+
 async function selectByLogin(login) {
     let conn = await connection.connect();
     return new Promise((resolve, reject) => {
@@ -66,7 +68,8 @@ router.get('/users', function (req, res) {
         res.send(JSON.stringify(data));
     });
 });
-let ObjectUsers = [];
+
+
 
 //---------------работа с упаковками------------------
 router.get('/', function (req, res) {
@@ -385,10 +388,12 @@ router.post('/calc', function (req, res) {
     let packid = req.body.params.ID;
     (async () => {
         await calculation(packid);
-        res.send(ObjectGraph);
+        data = [ObjectGraph, tableData]
+        res.send(data);
     })();
 
 });
+
 var ObjectEcos = {
     packs: [],
     weightMaterial: [],
@@ -405,6 +410,8 @@ var ObjectEcos = {
     totalIndex: []
 }
 var ObjectGraph = [];
+//формирование данных для таблицы на панели сравнения
+let tableData = [];
 
 async function calculation(packid) {
     try {
@@ -429,13 +436,32 @@ async function calcFormula2(packid) {
         await getPacks(packid[variable]);
         ObjectGraph[variable].name = ObjectEcos.packs[0].pack_name;
         await getWeightMaterial(packid[variable]);
+        tableData[variable] = {
+            idpack: packid[variable],
+            name: ObjectEcos.packs[0].pack_name,
+            materials: [],
+            ecols:[]
+        }
+        
+        tmpidmat = 0;
+        ObjectEcos.weightMaterial.map(function(mat){
+            idmat = mat.idmaterials;
+            tmp = {
+                name: mat.material_name,
+                value: mat.material_weight
+            }
+            if (idmat != tmpidmat){
+                tableData[variable].materials.push(tmp)
+                tmpidmat = idmat;
+            }
+        })
+
         var end_value = 0; //промежуточное значение
         ObjectEcos.weightMaterial.forEach(function (key) {
             var name = key.ecol_name;
             var weight = key.material_weight;
             var value = key.ecol_value;
             end_value = value * weight;
-
             if (typeof ObjectEcos.calculated[variable] == 'undefined') {
                 ObjectEcos.calculated[variable] = [];
             }
@@ -461,6 +487,11 @@ async function calcFormula2(packid) {
                 ObjectGraph[key].data = [];
             }
             ObjectGraph[key].data.push((Number(ObjectEcos.calculated[key][name])).toFixed(3));
+            tmpecol = {
+                name: name,
+                value: (Number(ObjectEcos.calculated[key][name])).toFixed(3)
+            }
+            tableData[key].ecols.push(tmpecol)
         }
     }
     // считаем сумму по всем упаковкам для 3 формулы
@@ -474,8 +505,9 @@ async function calcFormula2(packid) {
     }
     //console.log(ObjectEcos.criteria);
     //console.log(ObjectEcos.totalIndex);
-    //console.log(ObjectEcos.calculated);
+    //console.log(ObjectEcos);
     //console.log(ObjectGraph);
+    //console.log(tableData[0].ecols);
     return Promise.resolve(ObjectGraph);
 
 }
@@ -506,7 +538,7 @@ async function getWeightMaterial(idpack) {
     return new Promise((resolve, reject) => {
         //console.log("За инфой Пришла пачка -",idpack);
         conn.promise().query(`SELECT 
-        materials.idmaterials, ecol_charact.ecol_name, ecol_charact.ecol_criteria, ecol_value, material_weight.material_weight, material_weight.fk_packaging
+        materials.idmaterials, materials.material_name, ecol_charact.ecol_name, ecol_charact.ecol_criteria, ecol_value, material_weight.material_weight, material_weight.fk_packaging
     FROM
         ecolchar_value
             JOIN

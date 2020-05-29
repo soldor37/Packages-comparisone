@@ -64,14 +64,14 @@
                   ></v-text-field>
                   <hr />
                   <v-autocomplete
-                        v-model="selectedGroup"
-                        :items="packages"
-                        return-object
-                        item-text= "pack_name"
-                        outlined
-                        dense
-                        label="Packages"
-                        multiple
+                    v-model="selectedGroup"
+                    :items="packages"
+                    return-object
+                    item-text="pack_name"
+                    outlined
+                    dense
+                    label="Packages"
+                    multiple
                   ></v-autocomplete>
                 </v-col>
               </v-row>
@@ -118,9 +118,41 @@
                 </v-card>
               </v-tab-item>
               <!-- table tab -->
+              <!-- МОЖНО СДЕЛАТЬ ЧЕРЕЗ DATA-ITERATORS VUETIFY -->
               <v-tab-item>
                 <v-card flat>
-                  <!-- <apexchart type="bar" :options="chart1.chartOptions" :series="chart1.series"></apexchart> -->
+                  <v-simple-table
+                   height="600px"
+                   :dense="true" 
+                   :fixed-header="true" 
+                   class="table-bordered">
+                    <template v-slot:default>
+                      <thead>
+                        <tr>
+                          <th class="text-left">Package name</th>
+                          <th class="text-left">Materials</th>
+                          <th class="text-left">Relative values</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="item in forTable" :key="item.name">
+                          <td class="text-left">
+                            {{ item.name }}
+                          </td>
+                          <td class="text-left">
+                            <tr v-for="material in item.materials" :key="material.name">
+                              {{material.name}}: {{material.value}}
+                            </tr>
+                          </td>
+                          <td class="text-left">
+                          <tr v-for="ecol in item.ecols" :key="ecol.name">
+                              {{ecol.name}}: {{ecol.value}}
+                            </tr>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </template>
+                  </v-simple-table>
                 </v-card>
               </v-tab-item>
             </v-tabs-items>
@@ -143,20 +175,34 @@ export default {
   // },
   data() {
     return {
+      // --------------форма с результатами(графики и таблица)
       tab: null,
       tabs: ["Bar chart", "Radar chart", "Table"],
+      // ----------для селектов упаковок
       packages: [],
       selectedPack: [],
+      // ------------для групп упаковок
       packGroups: [],
       selectedGroup: undefined,
       btnSaveSelection: false,
-
       newGroup: {
         groupName: "",
         packIDs: []
       },
       dialog: false,
-
+      // --------------для таблицы с результатами
+      headers: [
+          {
+            text: 'Package name',
+            align: 'start',
+            sortable: false,
+            value: 'name',
+          },
+          { text: 'Materials' },
+          { text: 'Relative values'},
+        ],
+      forTable: [],
+      // -----гистограмма
       chart1: {
         series: [],
         chartOptions: {
@@ -248,6 +294,7 @@ export default {
           // }
         }
       },
+      // --------лепестковая диаграмма
       chart2: {
         chartOptions: {
           chart: {
@@ -346,6 +393,7 @@ export default {
     this.getData();
   },
   methods: {
+    // -----получение данных из бд
     getData() {
       this.getPackages();
       this.getGroups();
@@ -380,6 +428,7 @@ export default {
           console.log(error);
         });
     },
+    // ----------- пост запросы в бд
     calc() {
       var app = this;
       var hostname = window.location.hostname;
@@ -392,7 +441,8 @@ export default {
           }
         })
         .then(response => {
-          app.chart1.series = response.data;
+          app.chart1.series = response.data[0];
+          app.forTable = response.data[1]
         })
         .catch(error => {
           console.log("-----error-------");
@@ -414,6 +464,7 @@ export default {
           console.log(error);
         });
     },
+    // ------функциии
     createGroup() {
       let tmp = [];
       this.selectedGroup.map(function(item) {
