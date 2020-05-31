@@ -318,6 +318,20 @@ router.post('/editMaterial', function (req, res) {
         res.send('Data edit received');
     });
 });
+//--------------------критерии-------------------------
+router.post('/editCriteria', function (req, res) {
+    return new Promise(async (resolve, reject) => {
+        let conn = await connection.connect();
+        conn.promise().query(`UPDATE ecol_charact SET ecol_criteria = '${req.body.ecol_criteria}' WHERE idecol = '${req.body.idecol}';`)
+            .then(result => {
+                conn.release();
+            })
+            .catch(function (err) {
+                console.log(err.message);
+            });
+        res.send('Data edit received');
+    });
+});
 // ---------------------группы упаковок-----------------
 router.post('/newGroup', function (req, res) {
     return new Promise(async (resolve, reject) => {
@@ -440,7 +454,8 @@ async function calcFormula2(packid) {
             idpack: packid[variable],
             name: ObjectEcos.packs[0].pack_name,
             materials: [],
-            ecols:[]
+            ecols:[],
+            totalIndex: 0
         }
         
         tmpidmat = 0;
@@ -477,6 +492,33 @@ async function calcFormula2(packid) {
         ObjectEcos.criteria[name] = ObjectEcos.weightMaterial[ecol_count].ecol_criteria;
         ecol_count++;
     }
+    //TODO: Костыль, чтобы не брать ед. измерения из БД. Будет время- уберу
+    let ecol_dict = [
+        {
+            name: 'Energy',
+            measure: 'MJ/kg'
+        },
+        {
+            name: 'CO2',
+            measure: 'm^3/kg'
+        },
+        {
+            name: 'Water',
+            measure: 'l/kg'
+        },
+        {
+            name: 'OilConsumption',
+            measure: 'l/kg'
+        },
+        {
+            name: 'Garbage',
+            measure: 'kg'
+        },
+        {
+            name: 'WaterConsumption',
+            measure: 'l/kg'
+        },
+    ]
 
     for (key in ObjectEcos.calculated) {
         ObjectEcos.totalIndex[key] = 0;
@@ -487,13 +529,24 @@ async function calcFormula2(packid) {
                 ObjectGraph[key].data = [];
             }
             ObjectGraph[key].data.push((Number(ObjectEcos.calculated[key][name])).toFixed(3));
+            //берем единицы измерения из словаря
+            let tmpmeasure = '';
+            ecol_dict.map(function(ecol){
+                if(ecol.name == name){
+                    tmpmeasure = ecol.measure
+                }
+            })
             tmpecol = {
                 name: name,
+                measure: tmpmeasure,
                 value: (Number(ObjectEcos.calculated[key][name])).toFixed(3)
             }
             tableData[key].ecols.push(tmpecol)
         }
     }
+
+
+
     // считаем сумму по всем упаковкам для 3 формулы
     let IndexSum = 0;
     ObjectEcos.totalIndex.forEach(function (key) {
@@ -502,12 +555,13 @@ async function calcFormula2(packid) {
     for (key in ObjectEcos.calculated) {
         ObjectEcos.totalIndex[key] = ObjectEcos.totalIndex[key] / IndexSum;
         ObjectGraph[key].data.push((Number(ObjectEcos.totalIndex[key])).toFixed(3));
+        tableData[key].totalIndex = (Number(ObjectEcos.totalIndex[key])).toFixed(3);
     }
     //console.log(ObjectEcos.criteria);
     //console.log(ObjectEcos.totalIndex);
     //console.log(ObjectEcos);
     //console.log(ObjectGraph);
-    //console.log(tableData[0].ecols);
+    //console.log(tableData[0]);
     return Promise.resolve(ObjectGraph);
 
 }
@@ -538,7 +592,7 @@ async function getWeightMaterial(idpack) {
     return new Promise((resolve, reject) => {
         //console.log("За инфой Пришла пачка -",idpack);
         conn.promise().query(`SELECT 
-        materials.idmaterials, materials.material_name, ecol_charact.ecol_name, ecol_charact.ecol_criteria, ecol_value, material_weight.material_weight, material_weight.fk_packaging
+        materials.idmaterials, materials.material_name, ecol_charact.ecol_name, ecol_charact.ecol_criteria, ecol_charact.ecol_measure, ecol_value, material_weight.material_weight, material_weight.fk_packaging
     FROM
         ecolchar_value
             JOIN
@@ -603,6 +657,14 @@ router.get('/DBweight', function (req, res) {
 //таблица названий экологических характеристик + критерии
 router.get('/DBecolchar', function (req, res) {
     let sql = "SELECT idecol, ecol_measure, ecol_value, fk_materials, ecol_charact.ecol_name FROM ecolchar_value JOIN ecol_charact on fk_ecol_charact = idecol;"
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(data);
+    });
+});
+//таблица критериев ecol_charact
+router.get('/DBcriteria', function (req, res) {
+    let sql = "SELECT * FROM ecol_charact"
     return new Promise(async (resolve, reject) => {
         let data = await connection.find(sql);
         res.send(data);

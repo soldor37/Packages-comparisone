@@ -130,8 +130,9 @@
                       <thead>
                         <tr>
                           <th class="text-left">Package name</th>
-                          <th class="text-left">Materials</th>
+                          <th class="text-left">Materials, kg</th>
                           <th class="text-left">Relative values</th>
+                          <th class="text-left">Total index</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -146,8 +147,11 @@
                           </td>
                           <td class="text-left">
                           <tr v-for="ecol in item.ecols" :key="ecol.name">
-                              {{ecol.name}}: {{ecol.value}}
+                              {{ecol.name}}: {{ecol.value}}, {{ecol.measure}}
                             </tr>
+                          </td>
+                          <td class="text-left">
+                          {{item.totalIndex}}
                           </td>
                         </tr>
                       </tbody>
@@ -260,12 +264,12 @@ export default {
           },
           xaxis: {
             categories: [
-              "Energy, MJ",
-              "CO2, m^3",
-              "Water, l",
-              "Oil consumption, l",
+              "Energy, MJ/kg",
+              "CO2, m^3/kg",
+              "Water, l/kg",
+              "Oil consumption, l/kg",
               "Garbage, kg",
-              "Water consumption, l",
+              "Water consumption, l/kg",
               "Total index"
             ]
           },

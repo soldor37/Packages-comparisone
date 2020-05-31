@@ -22,7 +22,7 @@ import Register from './components/Register'
 import Package from './components/AdminPanel/Package'
 import Material from './components/AdminPanel/Material'
 import PackGroups from './components/AdminPanel/PackGroups'
-
+import Criteria from './components/AdminPanel/Criteria'
 
 import store from './store.js'
 import Axios from 'axios'
@@ -58,6 +58,15 @@ const routes = [
     path: '/admin/groups',
     component: PackGroups,
     name: 'Groups',
+    meta: { 
+      requiresAuth: true,
+      is_admin: true
+    } 
+  },
+  { 
+    path: '/admin/criteria',
+    component: Criteria,
+    name: 'Criteria',
     meta: { 
       requiresAuth: true,
       is_admin: true
