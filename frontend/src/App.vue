@@ -32,6 +32,15 @@
             <v-list-item-title class="title"><router-link to="/" tag="nav">Comparisone</router-link></v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+        <!-- показывается только обычному пользователю -->
+        <v-list-item link v-if="is_admin != 1">
+          <v-list-item-action>
+            <v-icon>mdi-package-variant</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title class="title"><router-link to="/packages" tag="nav">Packages</router-link></v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
 
         <v-list-group
             sub-group

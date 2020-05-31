@@ -19,10 +19,12 @@ import Login from './components/Login'
 // импортируем Register компонент
 import Register from './components/Register'
 
-import Package from './components/AdminPanel/Package'
+import Package from './components/AdminPanel/Package' //для администратора
+import PackagesNoAdmin from './components/PackagesNoAdmin' //для не администратора
+import Criteria from './components/AdminPanel/Criteria'
 import Material from './components/AdminPanel/Material'
 import PackGroups from './components/AdminPanel/PackGroups'
-import Criteria from './components/AdminPanel/Criteria'
+
 
 import store from './store.js'
 import Axios from 'axios'
@@ -43,6 +45,15 @@ const routes = [
     meta: { 
       requiresAuth: true,
       is_admin: true
+    } 
+  },
+  { 
+    path: '/packages',
+    component: PackagesNoAdmin,
+    name: 'packagesNoAdmin',
+    meta: { 
+      requiresAuth: true,
+      is_admin: false
     } 
   },
   { 
