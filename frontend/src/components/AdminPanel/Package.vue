@@ -24,11 +24,26 @@
                 <span class="headline">{{ formTitle }}</span>
               </v-card-title>
               <!-- добавление новой упк -->
+
               <v-card-text v-if="editedIndex == -1">
+                <!-- показывает предупреждение об ошибке при создании или редактировании упаковки -->
+                <v-alert
+                  :value="alertInSave"
+                  dense
+                  type="warning"
+                  border="top"
+                  transition="scale-transition"
+                >{{alertMessage}}</v-alert>
                 <v-container>
                   <v-row>
                     <v-col cols="12">
-                      <v-text-field v-model="editedItem.name" label="Package name"></v-text-field>
+                      <v-text-field
+                        v-model="editedItem.name"
+                        label="Package name"
+                        :rules="[rules.required, rules.min, rules.max]"
+                        hint="At least 3 characters"
+                        counter
+                      ></v-text-field>
                       <v-autocomplete
                         v-model="select_materials"
                         :items="material_for_select"
@@ -97,20 +112,26 @@
                 <v-container>
                   <v-row>
                     <v-col cols="12" sm="8" md="8">
-                      <v-text-field v-model="editedItem.name" label="Package name"></v-text-field>
+                      <v-text-field
+                        v-model="editedItem.name"
+                        label="Package name"
+                        :rules="[rules.required, rules.min, rules.max]"
+                        hint="At least 3 characters"
+                        counter
+                      ></v-text-field>
                       <div v-for="(mat, mat_key) in editedItem.materials" v-bind:key="mat_key">
-                        <template v-if="editedItem.materials[mat_key].mass > 0"> 
-                        <v-text-field
-                          v-model="editedItem.materials[mat_key].mass"
-                          :label="mat.name + ', (kg)'"
-                        ></v-text-field>
-                        <!-- <v-text-field
+                        <template v-if="editedItem.materials[mat_key].mass > 0">
+                          <v-text-field
+                            v-model="editedItem.materials[mat_key].mass"
+                            :label="mat.name + ', (g)'"
+                          ></v-text-field>
+                          <!-- <v-text-field
                           class="ml-5"
                           v-for="(eco, eco_key) in mat.ecolcharacts"
                           v-model="editedItem.materials[mat_key].ecolcharacts[eco_key].value"
                           :label="eco.name +', ('+ eco.measure+')'"
                           v-bind:key="eco_key"
-                        ></v-text-field> -->
+                          ></v-text-field>-->
                         </template>
                       </div>
                       <!-- <div>
@@ -204,11 +225,20 @@ export default {
       ],
       editedIndex: -1,
       editedItem: {
-        pack_name: "",
+        name: "",
         idpack: ""
       },
+      //правила для создания новой упаковки
+      rules: {
+        required: value => !!value || "Required",
+        min: v => v.length >= 3 || "Minimum 3 characters",
+        max: v => v.length <= 50 || "Maximum 50 characters"
+      },
+      //показывает предупреждение об ошибке при создании или редактировании упаковки
+      alertInSave: false,
+      alertMessage: "You have an error filling out the fields",
       defaultItem: {
-        pack_name: ""
+        name: ""
       },
       packages: [],
       materials: [],
@@ -216,7 +246,8 @@ export default {
       weight: [],
       ecolchar: [],
       ecolvalue: [],
-      ecoldict: []
+      ecoldict: [],
+      packNames: []
     };
   },
   computed: {
@@ -256,6 +287,7 @@ export default {
         return el.material_name;
       });
     },
+
     packfull() {
       if (
         this.packages == null &&
@@ -359,26 +391,60 @@ export default {
     save(funcInsert, funcEdit) {
       //если было редактирование
       if (this.editedIndex > -1) {
-        Object.assign(this.packages[this.editedIndex], this.editedItem);
-        funcEdit(this.editedItem);
+        let app = this;
+        //проверки на ввод и заполнение
+        this.packages.forEach(function(pack) {
+          if (pack.pack_name == app.editedItem.name) {
+            app.alertMessage = "This package name already exists";
+            app.alertInSave = true;
+          }else {
+            Object.assign(app.packages[app.editedIndex], app.editedItem);
+            funcEdit(app.editedItem);
+            app.alertInSave = false;
+            app.close();
+          }
+        });
+        
       }
       //если было добавление новой записи
       else {
-        this.packages.push(this.editedItem);
-
-        let new_pack = {
-          name: this.editedItem.name,
-          materials: this.material_items_for_table.map(mat => {
-            return {
-              name: mat.name,
-              value: mat.value,
-              id: mat.id
+        let app = this;
+        let checkMatValues = false;
+        app.material_items_for_table.forEach(function(mat) {
+          if (mat.value <= 0) {
+            checkMatValues = true;
+          }
+        });
+        //проверки на ввод и заполнение
+        this.packages.forEach(function(pack) {
+          if (pack.pack_name == app.editedItem.name) {
+            app.alertMessage = "This package name already exists";
+            app.alertInSave = true;
+          } else if (app.select_materials.length <= 0) {
+            app.alertMessage = "Pick at least one material";
+            app.alertInSave = true;
+          } else if (checkMatValues) {
+            app.alertMessage =
+              "Set value of each material more than zero, decimal separator: '.'";
+            app.alertInSave = true;
+          } else {
+            this.packages.push(this.editedItem);
+            let new_pack = {
+              name: this.editedItem.name,
+              materials: this.material_items_for_table.map(mat => {
+                return {
+                  name: mat.name,
+                  value: mat.value,
+                  id: mat.id
+                };
+              })
             };
-          })
-        };
-        funcInsert(new_pack);
+            funcInsert(new_pack);
+            app.alertInSave = false;
+            app.close();
+          }
+        });
       }
-      this.close();
     },
     onInsert(item) {
       var hostname = window.location.hostname;
@@ -428,7 +494,7 @@ export default {
       axios
         .get(`http://${hostname}:3000/posts`)
         .then(response => {
-          console.log(response);
+          //console.log(response);
           app.packages = response.data;
         })
         .catch(error => {
@@ -443,7 +509,7 @@ export default {
       axios
         .get(`http://${hostname}:3000/posts/DBmaterials`)
         .then(response => {
-          console.log(response);
+          //console.log(response);
           app.materials = response.data;
         })
         .catch(error => {
@@ -458,7 +524,7 @@ export default {
       axios
         .get(`http://${hostname}:3000/posts/DBweight`)
         .then(response => {
-          console.log(response);
+          //console.log(response);
           app.weight = response.data;
         })
         .catch(error => {
@@ -473,7 +539,7 @@ export default {
       axios
         .get(`http://${hostname}:3000/posts/DBecolchar`)
         .then(response => {
-          console.log(response);
+          //console.log(response);
           app.ecolchar = response.data;
         })
         .catch(error => {
@@ -488,7 +554,7 @@ export default {
       axios
         .get(`http://${hostname}:3000/posts/DBecolvalue`)
         .then(response => {
-          console.log(response);
+          //console.log(response);
           app.ecolvalue = response.data;
         })
         .catch(error => {
@@ -503,7 +569,7 @@ export default {
       axios
         .get(`http://${hostname}:3000/posts/ecol_dict`)
         .then(response => {
-          console.log(response);
+          //console.log(response);
           app.ecoldict = response.data;
         })
         .catch(error => {

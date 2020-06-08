@@ -10,8 +10,6 @@ Vue.use(VueRouter)
 import VueRouter from 'vue-router'
 
 import VueApexCharts from 'vue-apexcharts'
-// импортируем AdminPanel компонент
-import AdminPanel from './components/AdminPanel'
 // импортируем Comparisone компонент
 import Comparisone from './components/Comparisone'
 // импортируем Login компонент
@@ -24,7 +22,7 @@ import PackagesNoAdmin from './components/PackagesNoAdmin' //для не адм�
 import Criteria from './components/AdminPanel/Criteria'
 import Material from './components/AdminPanel/Material'
 import PackGroups from './components/AdminPanel/PackGroups'
-
+import Users from './components/AdminPanel/Users'
 
 import store from './store.js'
 import Axios from 'axios'
@@ -84,12 +82,12 @@ const routes = [
     } 
   },
   { 
-    path: '/AdminPanel',
-    component: AdminPanel,
-    name: 'adminpanel',
+    path: '/admin/users',
+    component: Users,
+    name: 'Users',
     meta: { 
-    requiresAuth: true,
-    is_admin: true
+      requiresAuth: true,
+      is_admin: true
     } 
   },
   { path: '/',

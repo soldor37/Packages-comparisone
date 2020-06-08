@@ -1,20 +1,3 @@
-<!--<template>
-<div>
-  <div id="menu" class="mt-1" md="3">
-    <b-row class="text-center">
-      <b-col>
-      <b-button-group size="lg" >
-      <b-button variant="outline-dark"><router-link to="/" tag="nav">Comparisone</router-link></b-button>
-      <b-button variant="outline-dark"><router-link to="/AdminPanel" tag="nav">Database</router-link></b-button>
-    </b-button-group>
-        </b-col>
-      </b-row>
-  </div>
-  <div id="app">
-    <router-view></router-view>
-  </div>
-</div>
-</template> -->
 
 <template>
   <v-app id="inspire">
@@ -75,6 +58,12 @@
             <v-list-item>
               <router-link to="/admin/criteria">
                 <v-list-item-title >Criteria</v-list-item-title>
+                <v-list-item-action><v-icon ></v-icon></v-list-item-action>
+              </router-link>
+            </v-list-item>
+            <v-list-item>
+              <router-link to="/admin/users">
+                <v-list-item-title >Users</v-list-item-title>
                 <v-list-item-action><v-icon ></v-icon></v-list-item-action>
               </router-link>
             </v-list-item>

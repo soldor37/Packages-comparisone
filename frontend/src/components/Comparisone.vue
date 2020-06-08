@@ -130,7 +130,7 @@
                       <thead>
                         <tr>
                           <th class="text-left">Package name</th>
-                          <th class="text-left">Materials, kg</th>
+                          <th class="text-left">Materials, gram</th>
                           <th class="text-left">Relative values</th>
                           <th class="text-left">Total index</th>
                         </tr>
@@ -268,7 +268,7 @@ export default {
               "CO2, m^3/kg",
               "Water, l/kg",
               "Oil consumption, l/kg",
-              "Garbage, kg",
+              "Garbage, kg/kg",
               "Water consumption, l/kg",
               "Total index"
             ]

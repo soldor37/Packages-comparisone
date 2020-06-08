@@ -45,22 +45,22 @@ router.post('/login', (req, res) => {
 //         })
 // }
 //регистрация новых пользователей
-router.post('/register', function (req, res) {
-    getConnection().Db_methods.insert([
-        req.body.name,
-        bcrypt.hashSync(req.body.password, 8)
-    ],
-        function (err) {
-            if (err) return res.status(500).send("There was a problem registering the user.")
-            selectByName(req.body.name, (err, user) => {
-                if (err) return res.status(500).send("There was a problem getting user")
-                let token = jwt.sign({ id: user.id }, config.secret, {
-                    expiresIn: 86400 // expires in 24 hours
-                });
-                res.status(200).send({ auth: true, token: token, user: user });
-            });
-        });
-});
+// router.post('/register', function (req, res) {
+//     getConnection().Db_methods.insert([
+//         req.body.name,
+//         bcrypt.hashSync(req.body.password, 8)
+//     ],
+//         function (err) {
+//             if (err) return res.status(500).send("There was a problem registering the user.")
+//             selectByName(req.body.name, (err, user) => {
+//                 if (err) return res.status(500).send("There was a problem getting user")
+//                 let token = jwt.sign({ id: user.id }, config.secret, {
+//                     expiresIn: 86400 // expires in 24 hours
+//                 });
+//                 res.status(200).send({ auth: true, token: token, user: user });
+//             });
+//         });
+// });
 router.get('/users', function (req, res) {
     let sql = "SELECT * FROM users WHERE login = 'admin'";
     return new Promise(async (resolve, reject) => {
@@ -68,9 +68,30 @@ router.get('/users', function (req, res) {
         res.send(JSON.stringify(data));
     });
 });
+router.get('/usersAdmPanel', function (req, res) {
+    let sql = "SELECT id, login, is_admin FROM users";
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(JSON.stringify(data));
+    });
+});
 
+router.post('/insertUser', function (req, res) {
+        let pass = bcrypt.hashSync(req.body.password, 8);
+        let adminBooltoInt = Number(Boolean(req.body.is_admin))
+        return new Promise(async (resolve, reject) => {
+            connection.find(`INSERT INTO users(login, password, is_admin) VALUES('${req.body.login}', '${pass}','${adminBooltoInt}');`)
+            res.send('Data insert received');
+        });
+});
 
-
+router.post('/deleteUser', function (req, res) {
+    console.log(req.body)
+    return new Promise(async (resolve, reject) => {
+        connection.find(`DELETE FROM users WHERE id = '${req.body.id}';`)
+        res.send('Data insert received');
+    });
+});
 //---------------работа с упаковками------------------
 router.get('/', function (req, res) {
     let sql = "SELECT idpack, pack_name FROM packaging";
@@ -162,6 +183,7 @@ router.get('/ecol_dict', function (req, res) {
 });
 
 router.post('/insert', function (req, res) {
+    
     return new Promise(async (resolve, reject) => {
         let lastID = 0;
         let conn = await connection.connect();
@@ -206,7 +228,6 @@ router.post('/delete', function (req, res) {
 });
 
 router.post('/edit', function (req, res) {
-    console.log(req.body)
     let sql1 = `UPDATE packaging SET pack_name = '${req.body.name}' WHERE idpack = '${req.body.id}';`
     let materials = req.body.materials;
     return new Promise(async (resolve, reject) => {
@@ -463,7 +484,7 @@ async function calcFormula2(packid) {
             idmat = mat.idmaterials;
             tmp = {
                 name: mat.material_name,
-                value: mat.material_weight
+                value: mat.material_weight,
             }
             if (idmat != tmpidmat){
                 tableData[variable].materials.push(tmp)
@@ -476,7 +497,7 @@ async function calcFormula2(packid) {
             var name = key.ecol_name;
             var weight = key.material_weight;
             var value = key.ecol_value;
-            end_value = value * weight;
+            end_value = value * weight / 1000; // переводим граммы в килограммы
             if (typeof ObjectEcos.calculated[variable] == 'undefined') {
                 ObjectEcos.calculated[variable] = [];
             }
@@ -576,7 +597,7 @@ async function calcFormula1(packid) {
             var name = key.ecol_name;
             var weight = key.material_weight;
             var value = key.ecol_value;
-            end_value = value * weight;
+            end_value = value * weight / 1000; // переводим граммы в килограммы
             //console.log("данные:",value,weight,end_value);
             if (typeof ObjectEcos.comparativeWeight[name] == 'undefined') {
                 ObjectEcos.comparativeWeight[name] = 0;

@@ -57,7 +57,6 @@ export default {
       submit() {
         let login = this.login 
         let password = this.password
-        //console.log(login, password)
         this.$store.dispatch('login', { login, password })
        .then(() => this.$router.push('/'))
        .catch(err => console.log(err))
