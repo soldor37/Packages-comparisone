@@ -3,6 +3,7 @@
     <v-data-table
       :headers="headers"
       :items="criteria"
+      :search="search"
       sort-by="idecol"
       item-key="ecol_name"
       class="elevation-1"
@@ -11,6 +12,13 @@
         <v-toolbar flat color="white">
           <v-toolbar-title>Criteria</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="500px">
             <v-card>
@@ -53,6 +61,7 @@ export default {
   name: "adminpanel",
   data() {
     return {
+      search: "",
       expanded: [],
       dialog: false,
       singleExpand: true,
@@ -64,21 +73,19 @@ export default {
           sortable: false,
           value: "ecol_name"
         },
-         { text: "Criteria value", value: "ecol_criteria", sortable: true },
+        { text: "Criteria value", value: "ecol_criteria", sortable: true },
         { text: "Actions", value: "action", sortable: false }
       ],
       editedIndex: -1,
       editedItem: {},
-      defaultItem: {
-        
-      },
+      defaultItem: {},
       criteria: []
     };
   },
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New material" : "Edit criteria";
-    },
+    }
   },
   watch: {
     dialog(val) {
@@ -140,7 +147,7 @@ export default {
           console.log("-----error-------");
           console.log(error);
         });
-    },
+    }
   }
 };
 </script>

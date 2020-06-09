@@ -14,8 +14,7 @@ import VueApexCharts from 'vue-apexcharts'
 import Comparisone from './components/Comparisone'
 // импортируем Login компонент
 import Login from './components/Login'
-// импортируем Register компонент
-import Register from './components/Register'
+
 
 import Package from './components/AdminPanel/Package' //для администратора
 import PackagesNoAdmin from './components/PackagesNoAdmin' //для не администратора
@@ -98,7 +97,6 @@ const routes = [
    } 
   },
   { path : '/login', component: Login },
-  {path : '/register', component: Register},
   // otherwise redirect to home
   { path: '*', redirect: '/' }
   ]

@@ -3,6 +3,7 @@
     <v-data-table
       :headers="headers"
       :items="packfull"
+      :search="search"
       sort-by="ID"
       :single-expand="singleExpand"
       :expanded.sync="expanded"
@@ -14,6 +15,13 @@
         <v-toolbar flat color="white">
           <v-toolbar-title>Packages</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="900px">
             <template v-slot:activator="{ on }">
@@ -123,6 +131,7 @@ export default {
   name: "adminpanel",
   data() {
     return {
+      search: '',
       expanded: [],
       expanded1: [],
       snack: false,

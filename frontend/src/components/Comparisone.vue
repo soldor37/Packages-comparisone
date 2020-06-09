@@ -1,52 +1,135 @@
 <template>
   <div id="comparisone">
     <router-view></router-view>
-    <b-container class="mt-2">
-      <b-row>
-        <b-col cols="4">
-          <v-container fluid>
-            <v-row align="center">
-              <!-- выбор группы упаковок -->
-              <v-col cols="12" sm="6">
-                <v-select
-                  v-model="selectedGroup"
-                  :items="packGroups"
-                  item-value="packs"
-                  item-text="name"
-                  :menu-props="{ maxHeight: '400' }"
-                  label="Select"
-                  outlined
-                  hint="Select an existing package group"
-                  persistent-hint
-                ></v-select>
-              </v-col>
-              <!-- выбор упаковки в группе -->
-              <v-col cols="12" sm="6">
-                <v-select
-                  v-model="selectedPack"
-                  :items="selectedGroup"
-                  item-value="idpack"
-                  item-text="pack_name"
-                  :menu-props="{ maxHeight: '400' }"
-                  label="Select"
-                  multiple
-                  chips
-                  outlined
-                  hint="Pick more than 1 package"
-                  persistent-hint
-                ></v-select>
-              </v-col>
-            </v-row>
-          </v-container>
-          <v-col>
-            <hr />
+    <v-container fluid>
+      <v-row>
+        <v-col cols="5" md="3">
+          <!-- выбор группы упаковок -->
+          <v-row class="pa-2">
+            <v-select
+              v-model="selectedGroup"
+              :items="packGroups"
+              item-value="packs"
+              item-text="name"
+              :menu-props="{ maxHeight: '400' }"
+              label="Select"
+              outlined
+              hint="Select an existing package group"
+              persistent-hint
+            ></v-select>
+          </v-row>
+          <!-- выбор упаковки в группе -->
+          <v-row class="pa-2">
+            <v-select
+              v-model="selectedPack"
+              :items="selectedGroup"
+              item-value="idpack"
+              item-text="pack_name"
+              :menu-props="{ maxHeight: '400' }"
+              label="Select"
+              multiple
+              chips
+              outlined
+              hint="Pick more than 1 package"
+              persistent-hint
+            ></v-select>
+          </v-row>
+
+          <v-row class="pa-2">
             <v-subheader v-text="'Create a new package group'"></v-subheader>
-            <b-button size="md" variant="outline-dark" @click.stop="dialog = true">New comparisone</b-button>
-            <v-divider class="mx-10" :inset="false" vertical></v-divider>
-            <hr />
-            <b-button size="lg" variant="outline-dark" @click="calc();">Calculate</b-button>
-          </v-col>
-        </b-col>
+            <v-btn color="light-blue lighten-4" @click.stop="dialog = true" block>New comparisone</v-btn>
+          </v-row>
+          <hr />
+          <v-row class="pa-2">
+            <v-btn color="light-blue lighten-4" @click="calc();" block>Calculate</v-btn>
+            <!-- показывает предупреждение об ошибке при создании или редактировании упаковки -->
+            <v-alert
+              :value="alertForm"
+              dense
+              type="warning"
+              transition="scale-transition"
+            >{{alertMessage}}</v-alert>
+          </v-row>
+        </v-col>
+        <v-col cols="12" md="9">
+          <!-- графики -->
+          <!-- <v-col :cols="9" lg="8" sm="6" xs="5"> -->
+          <v-card class="mx-auto" max-width="1500">
+            <v-card-title class="text-center justify-center py-6">
+              <h1 class="font-weight-bold title basil--text">Comparisone result</h1>
+            </v-card-title>
+
+            <v-tabs v-model="tab" background-color="transparent" grow>
+              <v-tab v-for="item in tabs" :key="item">{{ item }}</v-tab>
+            </v-tabs>
+
+            <v-tabs-items v-model="tab">
+              <v-tab-item>
+                <v-card flat>
+                  <apexchart
+                    type="bar"
+                    height="650"
+                    :options="chart1.chartOptions"
+                    :series="chart1.series"
+                  ></apexchart>
+                </v-card>
+              </v-tab-item>
+              <v-tab-item>
+                <v-card flat>
+                  <apexchart
+                    type="radar"
+                    height="650"
+                    :options="chart2.chartOptions"
+                    :series="chart1.series"
+                  ></apexchart>
+                </v-card>
+              </v-tab-item>
+              <!-- table tab -->
+              <!-- МОЖНО СДЕЛАТЬ ЧЕРЕЗ DATA-ITERATORS VUETIFY -->
+              <v-tab-item>
+                <v-card flat>
+                  <v-simple-table
+                    height="650px"
+                    :dense="true"
+                    :fixed-header="true"
+                    class="table-bordered"
+                  >
+                    <template v-slot:default>
+                      <thead>
+                        <tr>
+                          <th class="text-left">Package name</th>
+                          <th class="text-left">Materials, gram</th>
+                          <th class="text-left">Relative values</th>
+                          <th class="text-left">Total index</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="item in forTable" :key="item.name">
+                          <td class="text-left">{{ item.name }}</td>
+                          <td class="text-left">
+                            <tr
+                              v-for="material in item.materials"
+                              :key="material.name"
+                            >{{material.name}}: {{material.value}}</tr>
+                          </td>
+                          <td class="text-left">
+                            <tr
+                              v-for="ecol in item.ecols"
+                              :key="ecol.name"
+                            >{{ecol.name}}: {{ecol.value}}, {{ecol.measure}}</tr>
+                          </td>
+                          <td class="text-left">{{item.totalIndex}}</td>
+                        </tr>
+                      </tbody>
+                    </template>
+                  </v-simple-table>
+                </v-card>
+              </v-tab-item>
+            </v-tabs-items>
+          </v-card>
+        </v-col>
+        <!-- </v-col> -->
+
         <!-- доавление новой группы -->
         <v-dialog v-model="dialog" max-width="500px">
           <v-card>
@@ -94,78 +177,8 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-
-        <!-- графики -->
-        <b-col cols="8">
-          <v-card>
-            <v-card-title class="text-center justify-center py-6">
-              <h1 class="font-weight-bold display-3 basil--text">Comparisone result</h1>
-            </v-card-title>
-
-            <v-tabs v-model="tab" background-color="transparent" grow>
-              <v-tab v-for="item in tabs" :key="item">{{ item }}</v-tab>
-            </v-tabs>
-
-            <v-tabs-items v-model="tab">
-              <v-tab-item>
-                <v-card flat>
-                  <apexchart type="bar" :options="chart1.chartOptions" :series="chart1.series"></apexchart>
-                </v-card>
-              </v-tab-item>
-              <v-tab-item>
-                <v-card flat>
-                  <apexchart type="radar" :options="chart2.chartOptions" :series="chart1.series"></apexchart>
-                </v-card>
-              </v-tab-item>
-              <!-- table tab -->
-              <!-- МОЖНО СДЕЛАТЬ ЧЕРЕЗ DATA-ITERATORS VUETIFY -->
-              <v-tab-item>
-                <v-card flat>
-                  <v-simple-table
-                   height="600px"
-                   :dense="true" 
-                   :fixed-header="true" 
-                   class="table-bordered">
-                    <template v-slot:default>
-                      <thead>
-                        <tr>
-                          <th class="text-left">Package name</th>
-                          <th class="text-left">Materials, gram</th>
-                          <th class="text-left">Relative values</th>
-                          <th class="text-left">Total index</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="item in forTable" :key="item.name">
-                          <td class="text-left">
-                            {{ item.name }}
-                          </td>
-                          <td class="text-left">
-                            <tr v-for="material in item.materials" :key="material.name">
-                              {{material.name}}: {{material.value}}
-                            </tr>
-                          </td>
-                          <td class="text-left">
-                          <tr v-for="ecol in item.ecols" :key="ecol.name">
-                              {{ecol.name}}: {{ecol.value}}, {{ecol.measure}}
-                            </tr>
-                          </td>
-                          <td class="text-left">
-                          {{item.totalIndex}}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </template>
-                  </v-simple-table>
-                </v-card>
-              </v-tab-item>
-            </v-tabs-items>
-          </v-card>
-
-          <!-- <apexchart type="bar" :options="chart1.chartOptions" :series="chart1.series"></apexchart> -->
-        </b-col>
-      </b-row>
-    </b-container>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
@@ -194,17 +207,20 @@ export default {
         packIDs: []
       },
       dialog: false,
+      //показывает предупреждение об ошибке при создании или редактировании упаковки
+      alertForm: false,
+      alertMessage: "",
       // --------------для таблицы с результатами
       headers: [
-          {
-            text: 'Package name',
-            align: 'start',
-            sortable: false,
-            value: 'name',
-          },
-          { text: 'Materials' },
-          { text: 'Relative values'},
-        ],
+        {
+          text: "Package name",
+          align: "start",
+          sortable: false,
+          value: "name"
+        },
+        { text: "Materials" },
+        { text: "Relative values" }
+      ],
       forTable: [],
       // -----гистограмма
       chart1: {
@@ -240,7 +256,7 @@ export default {
                 position: "center"
               },
               horizontal: false,
-              columnWidth: "95%"
+              columnWidth: "80%"
               // endingShape: "rounded"
             }
           },
@@ -435,23 +451,29 @@ export default {
     // ----------- пост запросы в бд
     calc() {
       var app = this;
-      var hostname = window.location.hostname;
-      let select = app.selectedPack;
-      //console.log(select);
-      axios
-        .post(`http://${hostname}:3000/posts/calc`, {
-          params: {
-            ID: select
-          }
-        })
-        .then(response => {
-          app.chart1.series = response.data[0];
-          app.forTable = response.data[1]
-        })
-        .catch(error => {
-          console.log("-----error-------");
-          console.log(error);
-        });
+      if (app.selectedPack.length >= 2) {
+        app.alertForm = false;
+        var hostname = window.location.hostname;
+        let select = app.selectedPack;
+        //console.log(select);
+        axios
+          .post(`http://${hostname}:3000/posts/calc`, {
+            params: {
+              ID: select
+            }
+          })
+          .then(response => {
+            app.chart1.series = response.data[0];
+            app.forTable = response.data[1];
+          })
+          .catch(error => {
+            console.log("-----error-------");
+            console.log(error);
+          });
+      } else {
+        app.alertMessage = "Pick more than 1 package for comparisone";
+        app.alertForm = true;
+      }
     },
     saveGroup() {
       var app = this;

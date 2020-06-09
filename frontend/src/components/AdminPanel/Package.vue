@@ -6,6 +6,7 @@
       sort-by="ID"
       :single-expand="singleExpand"
       :expanded.sync="expanded"
+      :search="search"
       item-key="name"
       show-expand
       class="elevation-1"
@@ -14,6 +15,13 @@
         <v-toolbar flat color="white">
           <v-toolbar-title>Packages</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="900px">
             <template v-slot:activator="{ on }">
@@ -197,6 +205,7 @@ export default {
   name: "adminpanel",
   data() {
     return {
+      search: "",
       expanded: [],
       expanded1: [],
       snack: false,
@@ -377,9 +386,10 @@ export default {
     },
     deleteItem(item, funcDelete) {
       const index = this.packfull.indexOf(item);
-      confirm("Are you sure you want to delete this item?") &&
+      if (confirm("Are you sure you want to delete this item?") == true) {
         this.packages.splice(index, 1);
-      funcDelete(item);
+        funcDelete(item);
+      }
     },
     close() {
       this.dialog = false;
@@ -397,14 +407,13 @@ export default {
           if (pack.pack_name == app.editedItem.name) {
             app.alertMessage = "This package name already exists";
             app.alertInSave = true;
-          }else {
+          } else {
             Object.assign(app.packages[app.editedIndex], app.editedItem);
             funcEdit(app.editedItem);
             app.alertInSave = false;
             app.close();
           }
         });
-        
       }
       //если было добавление новой записи
       else {

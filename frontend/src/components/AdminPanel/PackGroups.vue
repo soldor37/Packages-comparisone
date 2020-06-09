@@ -6,6 +6,7 @@
       sort-by="idgroup"
       :single-expand="singleExpand"
       :expanded.sync="expanded"
+      :search="search"
       item-key="name"
       show-expand
       class="elevation-1"
@@ -14,6 +15,13 @@
         <v-toolbar flat color="white">
           <v-toolbar-title>Groups</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="500px">
             <template v-slot:activator="{ on }">
@@ -28,14 +36,13 @@
                 <v-container>
                   <v-row>
                     <v-col cols="12">
-                      <v-text-field v-model="newGroup.groupName" 
-                      label="Group name"></v-text-field>
-                      <hr>
+                      <v-text-field v-model="newGroup.groupName" label="Group name"></v-text-field>
+                      <hr />
                       <v-autocomplete
                         v-model="newGroup.packIDs"
                         :items="packages"
                         item-text="pack_name"
-                        item-value= idpack
+                        item-value="idpack"
                         outlined
                         dense
                         label="Packages"
@@ -52,14 +59,13 @@
                 <v-container>
                   <v-row>
                     <v-col cols="12">
-                      <v-text-field v-model="editedItem.name" 
-                      label="Group name"></v-text-field>
-                      <hr>
+                      <v-text-field v-model="editedItem.name" label="Group name"></v-text-field>
+                      <hr />
                       <v-autocomplete
                         v-model="editedItem.packs"
                         :items="packages"
                         item-text="pack_name"
-                        item-value= idpack
+                        item-value="idpack"
                         outlined
                         dense
                         label="Packages"
@@ -106,6 +112,7 @@ export default {
   name: "adminpanel",
   data() {
     return {
+      search: '',
       expanded: [],
       dialog: false,
       singleExpand: true,
@@ -124,18 +131,17 @@ export default {
       defaultItem: {},
       packGroups: [],
       newGroup: {
-        groupName: '',
+        groupName: "",
         packIDs: []
       },
       packages: [],
-      selectedGroup: undefined,
-
+      selectedGroup: undefined
     };
   },
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New group" : "Edit group";
-    },
+    }
   },
   watch: {
     dialog(val) {
@@ -157,9 +163,10 @@ export default {
     },
     deleteItem(item, funcDelete) {
       const index = this.packGroups.indexOf(item);
-      confirm("Are you sure you want to delete this item?") &&
+      if (confirm("Are you sure you want to delete this item?") == true) {
         this.packGroups.splice(index, 1);
-      funcDelete(item);
+        funcDelete(item);
+      }
     },
     close() {
       this.dialog = false;
@@ -253,7 +260,7 @@ export default {
           console.log("-----error-------");
           console.log(error);
         });
-    },
+    }
   }
 };
 </script>
