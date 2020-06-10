@@ -11,7 +11,7 @@
               :items="packGroups"
               item-value="packs"
               item-text="name"
-              :menu-props="{ maxHeight: '400' }"
+              :menu-props="{ maxHeight: '400'}"
               label="Select"
               outlined
               hint="Select an existing package group"
@@ -54,7 +54,7 @@
         <v-col cols="12" md="9">
           <!-- графики -->
           <!-- <v-col :cols="9" lg="8" sm="6" xs="5"> -->
-          <v-card class="mx-auto" max-width="1500">
+          <v-card>
             <v-card-title class="text-center justify-center py-6">
               <h1 class="font-weight-bold title basil--text">Comparisone result</h1>
             </v-card-title>
@@ -66,34 +66,19 @@
             <v-tabs-items v-model="tab">
               <v-tab-item>
                 <v-card flat>
-                  <apexchart
-                    type="bar"
-                    height="650"
-                    :options="chart1.chartOptions"
-                    :series="chart1.series"
-                  ></apexchart>
+                  <apexchart type="bar" :options="chart1.chartOptions" :series="chart1.series"></apexchart>
                 </v-card>
               </v-tab-item>
               <v-tab-item>
                 <v-card flat>
-                  <apexchart
-                    type="radar"
-                    height="650"
-                    :options="chart2.chartOptions"
-                    :series="chart1.series"
-                  ></apexchart>
+                  <apexchart type="radar" :options="chart2.chartOptions" :series="chart1.series"></apexchart>
                 </v-card>
               </v-tab-item>
               <!-- table tab -->
               <!-- МОЖНО СДЕЛАТЬ ЧЕРЕЗ DATA-ITERATORS VUETIFY -->
               <v-tab-item>
                 <v-card flat>
-                  <v-simple-table
-                    height="650px"
-                    :dense="true"
-                    :fixed-header="true"
-                    class="table-bordered"
-                  >
+                  <v-simple-table :dense="true" :fixed-header="true" class="table-bordered">
                     <template v-slot:default>
                       <thead>
                         <tr>
@@ -242,7 +227,6 @@ export default {
               }
             }
           },
-          //TODO: вывод названия упаковки
           legend: {
             show: true,
             formatter: function(seriesName) {
@@ -260,6 +244,69 @@ export default {
               // endingShape: "rounded"
             }
           },
+          //уменьшение размера графика на мобильных устройствах
+          responsive: [
+            {
+              breakpoint: 1000,
+              options: {
+                chart: {
+                  height: "250",
+                  width: '100%'
+                },
+                plotOptions: {
+                  bar: {
+                    dataLabels: {
+                      position: "center"
+                    },
+                    horizontal: false,
+                    columnWidth: "80%"
+                  }
+                },
+                legend: {
+                  show: true,
+                  formatter: function(seriesName) {
+                    return seriesName;
+                  },
+                  fontSize: "8px"
+                },
+                dataLabels: {
+                  enabled: false
+                },
+                yaxis: {
+                  max: 1,
+                  min: 0,
+                  tickAmount: 2,
+                  decimalsInFloat: 1,
+                  title: {
+                    text: "Relative values of environmental characteristics",
+                    style: {
+                      fontSize: "7px"
+                      //colors: ['#333']
+                    }
+                  }
+                },
+                xaxis: {
+                  labels: {
+                    show: true,
+                    rotate: -90,
+                    rotateAlways: false,
+                    trim: true,
+                    minHeight: undefined,
+                    maxHeight: 120,
+                    style: {
+                      colors: [],
+                      fontSize: "6px",
+                      fontFamily: "Helvetica, Arial, sans-serif",
+                      fontWeight: 400,
+                      cssClass: "apexcharts-xaxis-label"
+                    },
+                    offsetX: 0,
+                    offsetY: 0
+                  }
+                }
+              }
+            }
+          ],
           dataLabels: {
             enabled: true,
             dropShadow: {
@@ -318,7 +365,6 @@ export default {
       chart2: {
         chartOptions: {
           chart: {
-            height: 350,
             type: "radar",
             dropShadow: {
               enabled: true,
@@ -382,7 +428,57 @@ export default {
               //   return val.toFixed(2);
               // }
             }
-          }
+          },
+          responsive: [
+            {
+              breakpoint: 1000,
+              options: {
+                chart: {
+                  height: "250",
+                  width: '100%'
+                },
+                title: {
+                  text: "Relative values of environmental characteristics",
+                  align: "center",
+                  margin: 10,
+                  offsetY: 10,
+                  style: {
+                    fontSize: "6px"
+                  }
+                },
+                markers: {
+                  size: 1
+                },
+                xaxis: {
+                  labels: {
+                    style: {
+                      colors: [],
+                      fontSize: "6px",
+                      fontFamily: "Helvetica, Arial, sans-serif",
+                      fontWeight: 400,
+                      cssClass: "apexcharts-xaxis-label"
+                    }
+                  }
+                },
+                yaxis: {
+                  min: 0,
+                  tickAmount: 2,
+                  decimalsInFloat: 1,
+                  labels: {
+                    style: {
+                      fontSize: "6px",
+                      fontFamily: "Helvetica, Arial, sans-serif",
+                      fontWeight: 400,
+                      cssClass: "apexcharts-yaxis-label"
+                    }
+                    // formatter: function(val) {
+                    //   return val.toFixed(2);
+                    // }
+                  }
+                }
+              }
+            }
+          ]
         }
       }
     };

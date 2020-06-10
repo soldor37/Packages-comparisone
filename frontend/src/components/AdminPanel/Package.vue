@@ -32,7 +32,6 @@
                 <span class="headline">{{ formTitle }}</span>
               </v-card-title>
               <!-- добавление новой упк -->
-
               <v-card-text v-if="editedIndex == -1">
                 <!-- показывает предупреждение об ошибке при создании или редактировании упаковки -->
                 <v-alert
@@ -48,9 +47,10 @@
                       <v-text-field
                         v-model="editedItem.name"
                         label="Package name"
-                        :rules="[rules.required, rules.min, rules.max]"
+                        :rules="rulesName"
                         hint="At least 3 characters"
-                        counter
+                        :counter="50"
+                        required
                       ></v-text-field>
                       <v-autocomplete
                         v-model="select_materials"
@@ -59,6 +59,7 @@
                         dense
                         label="Materials"
                         multiple
+                        required
                       ></v-autocomplete>
 
                       <v-data-table
@@ -90,8 +91,11 @@
                                 v-model="props.item.value"
                                 label="Edit"
                                 single-line
+                                :rules="rulesValue"
                                 counter
                                 autofocus
+                                required
+                                hint="Use 'dot' as decimal separator"
                               ></v-text-field>
                             </template>
                           </v-edit-dialog>
@@ -123,9 +127,10 @@
                       <v-text-field
                         v-model="editedItem.name"
                         label="Package name"
-                        :rules="[rules.required, rules.min, rules.max]"
+                        :rules="rulesName"
                         hint="At least 3 characters"
                         counter
+                        required
                       ></v-text-field>
                       <div v-for="(mat, mat_key) in editedItem.materials" v-bind:key="mat_key">
                         <template v-if="editedItem.materials[mat_key].mass > 0">
@@ -157,7 +162,8 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
-                <v-btn color="blue darken-1" text @click="save(onInsert,onEdit)">Save</v-btn>
+                <!-- save(onInsert,onEdit) -->
+                <v-btn color="blue darken-1" text @click="save()">Save</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -174,7 +180,7 @@
       <template v-slot:expanded-item="{ headers, item }">
         <v-list-item-title two-line v-for="(mat, key) in item.materials" v-bind:key="key">
           <template v-if="mat.mass > 0">
-            {{mat.name }} : {{mat.mass}}, (kg)
+            {{mat.name }} : {{mat.mass}}, (g)
             <v-list-item-subtitle
               v-for="(ecol, eco_key) in mat.ecolcharacts"
               v-bind:key="eco_key"
@@ -230,7 +236,7 @@ export default {
           sortable: false,
           value: "name"
         },
-        { text: "value", value: "value" }
+        { text: "Weight, g", value: "value" }
       ],
       editedIndex: -1,
       editedItem: {
@@ -238,11 +244,15 @@ export default {
         idpack: ""
       },
       //правила для создания новой упаковки
-      rules: {
-        required: value => !!value || "Required",
-        min: v => v.length >= 3 || "Minimum 3 characters",
-        max: v => v.length <= 50 || "Maximum 50 characters"
-      },
+      rulesName: [
+        value => !!value || "Required",
+        value => value.length >= 3 || "Minimum 3 characters",
+        value => value.length <= 50 || "Maximum 50 characters"
+      ],
+      rulesValue: [
+        value => !!value || "Required",
+        value => value.length <= 50 || "Maximum 50 characters",
+      ],
       //показывает предупреждение об ошибке при создании или редактировании упаковки
       alertInSave: false,
       alertMessage: "You have an error filling out the fields",

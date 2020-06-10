@@ -101,7 +101,7 @@
           <thead>
             <tr>
               <th class="text-left">Material</th>
-              <th class="text-left">Value, kg</th>
+              <th class="text-left">Value, g</th>
             </tr>
           </thead>
           <tbody>
@@ -156,7 +156,7 @@ export default {
           sortable: false,
           value: "name"
         },
-        { text: "value", value: "value" }
+        { text: "Weight, g", value: "value" }
       ],
       editedIndex: -1,
       editedItem: {
