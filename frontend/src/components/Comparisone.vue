@@ -3,7 +3,7 @@
     <router-view></router-view>
     <v-container fluid>
       <v-row>
-        <v-col cols="5" md="3">
+        <v-col md="3" sm="12">
           <!-- выбор группы упаковок -->
           <v-row class="pa-2">
             <v-select
@@ -51,7 +51,7 @@
             >{{alertMessage}}</v-alert>
           </v-row>
         </v-col>
-        <v-col cols="12" md="9">
+        <v-col md="9" sm="12" >
           <!-- графики -->
           <!-- <v-col :cols="9" lg="8" sm="6" xs="5"> -->
           <v-card>
@@ -551,6 +551,7 @@ export default {
         app.alertForm = false;
         var hostname = window.location.hostname;
         let select = app.selectedPack;
+        app.forTable = [];
         //console.log(select);
         axios
           .post(`http://${hostname}:3000/posts/calc`, {
@@ -561,6 +562,7 @@ export default {
           .then(response => {
             app.chart1.series = response.data[0];
             app.forTable = response.data[1];
+            console.log(response.data[1])
           })
           .catch(error => {
             console.log("-----error-------");

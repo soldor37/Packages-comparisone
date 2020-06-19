@@ -461,6 +461,7 @@ async function calculation(packid) {
 async function calcFormula2(packid) {
     ObjectEcos.calculated = [];
     ObjectGraph = [];
+    tableData = [];
     for (let variable in packid) {
         if (typeof ObjectGraph[variable] == 'undefined') {
             ObjectGraph[variable] = {};

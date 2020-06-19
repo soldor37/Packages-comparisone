@@ -28,10 +28,11 @@ export default new Vuex.Store({
   actions: {
     login({commit}, user){
       var hostname = window.location.hostname;
+      let port = 3000;
       return new Promise((resolve, reject) => {
         commit('auth_request')
         axios
-        .post(`http://${hostname}:3000/posts/login`,user)
+        .post(`http://${hostname}:${port}/posts/login`,user)
         .then(resp => {
           const token = resp.data.token
           const user = resp.data.user

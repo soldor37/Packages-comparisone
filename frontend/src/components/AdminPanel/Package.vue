@@ -33,14 +33,14 @@
               </v-card-title>
               <!-- добавление новой упк -->
               <v-card-text v-if="editedIndex == -1">
-                <!-- показывает предупреждение об ошибке при создании или редактировании упаковки -->
+                <!-- показывает предупреждение об ошибке при создании или редактировании упаковки
                 <v-alert
                   :value="alertInSave"
                   dense
                   type="warning"
                   border="top"
                   transition="scale-transition"
-                >{{alertMessage}}</v-alert>
+                >{{alertMessage}}</v-alert> -->
                 <v-container>
                   <v-row>
                     <v-col cols="12">
@@ -163,7 +163,7 @@
                 <v-spacer></v-spacer>
                 <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
                 <!-- save(onInsert,onEdit) -->
-                <v-btn color="blue darken-1" text @click="save()">Save</v-btn>
+                <v-btn color="blue darken-1" text @click="save(onInsert, onEdit)">Save</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -251,11 +251,11 @@ export default {
       ],
       rulesValue: [
         value => !!value || "Required",
-        value => value.length <= 50 || "Maximum 50 characters",
+        value => value.length <= 50 || "Maximum 50 characters"
       ],
-      //показывает предупреждение об ошибке при создании или редактировании упаковки
-      alertInSave: false,
-      alertMessage: "You have an error filling out the fields",
+      // //показывает предупреждение об ошибке при создании или редактировании упаковки
+      // alertInSave: false,
+      // alertMessage: "You have an error filling out the fields",
       defaultItem: {
         name: ""
       },
@@ -409,60 +409,26 @@ export default {
       }, 300);
     },
     save(funcInsert, funcEdit) {
+      let app = this;
       //если было редактирование
       if (this.editedIndex > -1) {
-        let app = this;
-        //проверки на ввод и заполнение
-        this.packages.forEach(function(pack) {
-          if (pack.pack_name == app.editedItem.name) {
-            app.alertMessage = "This package name already exists";
-            app.alertInSave = true;
-          } else {
-            Object.assign(app.packages[app.editedIndex], app.editedItem);
-            funcEdit(app.editedItem);
-            app.alertInSave = false;
-            app.close();
-          }
-        });
-      }
-      //если было добавление новой записи
-      else {
-        let app = this;
-        let checkMatValues = false;
-        app.material_items_for_table.forEach(function(mat) {
-          if (mat.value <= 0) {
-            checkMatValues = true;
-          }
-        });
-        //проверки на ввод и заполнение
-        this.packages.forEach(function(pack) {
-          if (pack.pack_name == app.editedItem.name) {
-            app.alertMessage = "This package name already exists";
-            app.alertInSave = true;
-          } else if (app.select_materials.length <= 0) {
-            app.alertMessage = "Pick at least one material";
-            app.alertInSave = true;
-          } else if (checkMatValues) {
-            app.alertMessage =
-              "Set value of each material more than zero, decimal separator: '.'";
-            app.alertInSave = true;
-          } else {
-            this.packages.push(this.editedItem);
-            let new_pack = {
-              name: this.editedItem.name,
-              materials: this.material_items_for_table.map(mat => {
-                return {
-                  name: mat.name,
-                  value: mat.value,
-                  id: mat.id
-                };
-              })
+        Object.assign(app.packages[app.editedIndex], app.editedItem);
+        funcEdit(app.editedItem);
+        app.close();
+      } else {
+        app.packages.push(this.editedItem);
+        let new_pack = {
+          name: this.editedItem.name,
+          materials: this.material_items_for_table.map(mat => {
+            return {
+              name: mat.name,
+              value: mat.value,
+              id: mat.id
             };
-            funcInsert(new_pack);
-            app.alertInSave = false;
-            app.close();
-          }
-        });
+          })
+        };
+        funcInsert(new_pack);
+        app.close();
       }
     },
     onInsert(item) {
