@@ -1,5 +1,5 @@
 # Single-page application for comparing packaging materials on environmental characteristics / Веб-приложение для сравнения упаковочных материалов по экологическим характеристикам
-![Farmers Market Finder Demo](demo/PackComp.gif)
+![Package comparisone SPA Demo](demo/PackComp.gif)
 
 [Посмотреть проект](http://37.46.135.200/ "Ссылка на проект"). Для получения логина и пароля обратиться к автору, т.к. в проекте используются производственные данные.
 ---
