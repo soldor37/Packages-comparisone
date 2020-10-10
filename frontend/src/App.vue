@@ -3,7 +3,10 @@
   <v-app id="inspire">
     <v-navigation-drawer v-model="drawer" app v-if="isLoggedIn">
       <v-list dense>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
         <v-list-item link to="/">
           <v-list-item-action>
             <v-icon>mdi-chart-bar</v-icon>
@@ -46,9 +49,12 @@
         </v-list-group>
       </v-list>
     </v-navigation-drawer>
+<<<<<<< HEAD
     <!-- эксп -->
 
     <!--эксп  -->
+=======
+>>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
 
     <v-app-bar app color="indigo" dark>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "name": "diplom",
   "version": "1.0.0",
@@ -32,3 +33,39 @@
   },
   "homepage": "https://github.com/soldor37/Diplom#readme"
 }
+=======
+{
+  "name": "diplom",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "bcrypt": "^4.0.0",
+    "body-parser": "^1.19.0",
+    "bootstrap": "^4.4.1",
+    "bootstrap-vue": "^2.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "hbs": "^4.1.0",
+    "jquery": "^3.4.1",
+    "jsonwebtoken": "^8.5.1",
+    "mysql2": "^2.1.0",
+    "vue": "^2.6.11"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soldor37/Diplom.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/soldor37/Diplom/issues"
+  },
+  "homepage": "https://github.com/soldor37/Diplom#readme"
+}
+>>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b

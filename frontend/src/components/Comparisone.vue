@@ -35,7 +35,10 @@
             ></v-select>
           </v-row>
 
+<<<<<<< HEAD
           
+=======
+>>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
           <v-row class="pa-2">
             <v-subheader v-text="'Create a new package group'"></v-subheader>
             <v-btn color="light-blue lighten-4" @click.stop="dialog = true" block>New comparisone</v-btn>
