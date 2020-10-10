@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Список упаковок</title>
+    <meta charset="utf-8" />
+</head>
+<body>
+    <h1>Список упаковок</h1>
+    <p><a href="/create">Добавить упаковку</a></p>
+    <table>
+        <tr><th>idpack</th><th>name</th><th></th></tr>
+        {{#each packs}}
+            <tr>
+                <td>{{this.idpack}}</td>
+                <td>{{this.pack_name}}</td>
+                <td>
+                    <a href="/edit/{{this.id}}">Edit</a>|
+                    <form action="delete/{{this.id}}" method="POST" style="display:inline;">
+                        <input type="submit" value="Delete" />
+                    </form>
+                </td>
+            </tr>
+        {{/each}}
+    </table>
+</body>
+<html>
