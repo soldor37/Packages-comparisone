@@ -9,38 +9,30 @@
   },
   "dependencies": {
     "@mdi/font": "^4.9.95",
-    "apexcharts": "^3.15.6",
+    "apexcharts": "^3.22.0",
     "axios": "^0.19.2",
-    "bootstrap": "^4.4.1",
-    "bootstrap-vue": "^2.5.0",
-    "core-js": "^3.6.4",
-    "jquery": "^3.4.1",
+    "bootstrap": "^4.5.2",
+    "bootstrap-vue": "^2.17.3",
+    "core-js": "^3.6.5",
+    "jquery": "^3.5.1",
     "jsonwebtoken": "^8.5.1",
-<<<<<<< HEAD
     "vue": "^2.6.12",
-=======
-    "vue": "^2.6.11",
->>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
-    "vue-apexcharts": "^1.5.2",
-    "vue-router": "^3.1.5",
+    "vue-apexcharts": "^1.6.0",
+    "vue-router": "^3.4.6",
     "vuelidate": "^0.7.5",
-    "vuetify": "^2.2.14",
-    "vuex": "^3.1.2"
+    "vuetify": "^2.3.13",
+    "vuex": "^3.5.1"
   },
   "devDependencies": {
     "@mdi/js": "^4.9.95",
-    "@vue/cli-plugin-babel": "^4.2.0",
-    "@vue/cli-plugin-eslint": "^4.2.0",
-    "@vue/cli-service": "^4.2.0",
-    "babel-eslint": "^10.0.3",
+    "@vue/cli-plugin-babel": "^4.5.7",
+    "@vue/cli-plugin-eslint": "^4.5.7",
+    "@vue/cli-service": "^4.5.7",
+    "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^6.1.2",
+    "eslint-plugin-vue": "^6.2.2",
     "material-design-icons-iconfont": "^5.0.1",
-<<<<<<< HEAD
     "vue-template-compiler": "^2.6.12"
-=======
-    "vue-template-compiler": "^2.6.11"
->>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
   },
   "eslintConfig": {
     "root": true,

@@ -23,11 +23,7 @@ async function selectByLogin(login) {
             });
     });
 }
-<<<<<<< HEAD
 //аутентификация по логину и паролю
-=======
-//аутонтификация по логину и паролю
->>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
 router.post('/login', (req, res) => {
     (async () => {
         await selectByLogin(req.body.login)
@@ -133,7 +129,6 @@ FROM
             });
             return ret
         })
-<<<<<<< HEAD
 
         /*тоже самое, что выше, только некрасиво
         let groups = [];
@@ -175,48 +170,6 @@ FROM
                 
              });
         }*/
-=======
-        //тоже самое, что выше, только некрасиво
-        //let groups = [];
-        // for (index in tmp){
-        //     let group = {
-        //         idgroup: null,
-        //         name: '',
-        //         packs: []
-        //     };
-        //     let tmpPack;
-        //     tmp[index].forEach(function (item) {
-        //         //console.log(item.fk_id_group)
-        //         if (group.idgroup == 0){
-        //             group.idgroup = item.fk_id_group;
-        //             group.name = item.name;
-        //             tmpPack = {
-        //                 idpack: item.idpack,
-        //                 pack_name: item.pack_name
-        //             }
-        //             group.packs.push(tmpPack);
-        //         }
-        //         else if(group.idgroup != item.fk_id_group){
-        //             groups.push(group);
-        //             group.idgroup = item.fk_id_group;
-        //             group.name = item.name;
-        //             tmpPack = {
-        //                 idpack: item.idpack,
-        //                 pack_name: item.pack_name
-        //             }
-        //             group.packs.push(tmpPack);
-        //         }
-        //         else{
-        //             tmpPack = {
-        //                 idpack: item.idpack,
-        //                 pack_name: item.pack_name
-        //             }
-        //             group.packs.push(tmpPack);
-        //         }
-                
-        //     });
-        // }
->>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
         
         //console.log(groups)
         res.send(groups);
@@ -254,10 +207,6 @@ router.post('/insert', function (req, res) {
     });
 
 });
-<<<<<<< HEAD
-
-=======
->>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
 //удаление упаковки вместе с принадлежащими ей весовыми значения материалов
 router.post('/delete', function (req, res) {
     let materials = req.body.materials;
@@ -391,10 +340,6 @@ router.post('/editMaterial', function (req, res) {
         res.send('Data edit received');
     });
 });
-<<<<<<< HEAD
-
-=======
->>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
 //--------------------критерии-------------------------
 router.post('/editCriteria', function (req, res) {
     return new Promise(async (resolve, reject) => {
@@ -409,10 +354,6 @@ router.post('/editCriteria', function (req, res) {
         res.send('Data edit received');
     });
 });
-<<<<<<< HEAD
-
-=======
->>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
 // ---------------------группы упаковок-----------------
 router.post('/newGroup', function (req, res) {
     return new Promise(async (resolve, reject) => {
@@ -436,10 +377,6 @@ router.post('/newGroup', function (req, res) {
         res.send('Data insert received');
     });
 });
-<<<<<<< HEAD
-
-=======
->>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
 //удаление группы упаковок
 router.post('/deleteGroup', function (req, res) {
     let sql = `DELETE FROM pack_groups WHERE idpack_groups = '${req.body.idgroup}';`;
@@ -482,10 +419,6 @@ router.post('/deleteGroup', function (req, res) {
 
 //     });
 // });
-<<<<<<< HEAD
-
-=======
->>>>>>> 7c674413fe2cea5fdbc49d2664d04217f24bd20b
 // ---------------------Расчеты для сравнения--------------------------
 router.post('/calc', function (req, res) {
     let packid = req.body.params.ID;
@@ -768,6 +701,16 @@ router.get('/DBecolvalue', function (req, res) {
         res.send(data);
     });
 });
+
+// ---------------страны и года
+//таблица значений экол характеристик
+// router.get('/DBcountries', function (req, res) {
+//     let sql = "SELECT * FROM ecolchar_value;"
+//     return new Promise(async (resolve, reject) => {
+//         let data = await connection.find(sql);
+//         res.send(data);
+//     });
+// });
 // function getSettingsEco(packid) {
 //     connection.getConnection.query(`SELECT 
 //     *

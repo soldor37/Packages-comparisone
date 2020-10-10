@@ -11,7 +11,7 @@ import VueRouter from 'vue-router'
 
 import VueApexCharts from 'vue-apexcharts'
 // импортируем Comparisone компонент
-import Comparisone from './components/Comparisone'
+import Comparisone from './components/Comparisone/Comparisone.vue'
 // импортируем Login компонент
 import Login from './components/Login'
 
