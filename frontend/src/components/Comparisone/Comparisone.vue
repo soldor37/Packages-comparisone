@@ -42,10 +42,7 @@
 
           <v-row class="pa-2">
             <v-subheader v-text="'Create a new package group'"></v-subheader>
-            <v-btn
-              color="green lighten-4"
-              @click.stop="dialog = true"
-              block
+            <v-btn color="green lighten-4" @click.stop="dialog = true" block
               >New comparisone</v-btn
             >
           </v-row>
@@ -79,8 +76,8 @@
             </v-tabs>
 
             <v-tabs-items v-model="tab">
-              <v-tab-item>
-                <v-card flat>
+              <v-tab-item >
+                <v-card flat v-if="chart1.series[0] !== undefined && chart1.series[1] !== undefined">
                   <apexchart
                     type="bar"
                     :options="chart1.chartOptions"
@@ -619,6 +616,7 @@ export default {
             console.log(response.data[1]);
           })
           .catch((error) => {
+            this.chart1Status = "ERROR"
             console.log("-----error-------");
             console.log(error);
           });
