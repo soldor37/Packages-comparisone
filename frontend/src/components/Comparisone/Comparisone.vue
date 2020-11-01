@@ -43,7 +43,7 @@
           <v-row class="pa-2">
             <v-subheader v-text="'Create a new package group'"></v-subheader>
             <v-btn
-              color="light-blue lighten-4"
+              color="green lighten-4"
               @click.stop="dialog = true"
               block
               >New comparisone</v-btn
@@ -51,7 +51,7 @@
           </v-row>
           <hr />
           <v-row class="pa-2">
-            <v-btn color="light-blue lighten-4" @click="calc()" block
+            <v-btn color="green lighten-4" @click="calc()" block
               >Calculate</v-btn
             >
             <!-- показывает предупреждение об ошибке при создании или редактировании упаковки -->
@@ -222,9 +222,6 @@ export default {
     "territory-selection": territoryNyearSelection,
   },
   name: "comparisone",
-  components: {
-    apexchart: VueApexCharts
-  },
   data() {
     return {
       // --------------выбор страны и года

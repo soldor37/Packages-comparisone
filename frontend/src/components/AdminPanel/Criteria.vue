@@ -45,7 +45,7 @@
           </v-dialog>
         </v-toolbar>
       </template>
-      <template v-slot:item.action="{ item }">
+      <template v-slot:item="{ item }">
         <v-icon big class="mr-2" @click="editItem(item)">mdi-pencil-outline</v-icon>
       </template>
       <template v-slot:no-data>
