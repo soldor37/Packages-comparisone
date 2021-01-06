@@ -130,47 +130,6 @@ FROM
             return ret
         })
 
-        /*тоже самое, что выше, только некрасиво
-        let groups = [];
-         for (index in tmp){
-             let group = {
-                 idgroup: null,
-                 name: '',
-                 packs: []
-             };
-             let tmpPack;
-             tmp[index].forEach(function (item) {
-                 //console.log(item.fk_id_group)
-                 if (group.idgroup == 0){
-                     group.idgroup = item.fk_id_group;
-                     group.name = item.name;
-                     tmpPack = {
-                         idpack: item.idpack,
-                         pack_name: item.pack_name
-                     }
-                     group.packs.push(tmpPack);
-                 }
-                 else if(group.idgroup != item.fk_id_group){
-                    groups.push(group);
-                     group.idgroup = item.fk_id_group;
-                     group.name = item.name;
-                    tmpPack = {
-                        idpack: item.idpack,
-                        pack_name: item.pack_name
-                     }
-                     group.packs.push(tmpPack);
-                 }
-                 else{
-                    tmpPack = {
-                         idpack: item.idpack,
-                         pack_name: item.pack_name
-                 }
-                     group.packs.push(tmpPack);
-                 }
-                
-             });
-        }*/
-        
         //console.log(groups)
         res.send(groups);
     });
@@ -495,11 +454,12 @@ async function calcFormula2(packid) {
         })
 
         var end_value = 0; //промежуточное значение
+        
         ObjectEcos.weightMaterial.forEach(function (key) {
             var name = key.ecol_name;
             var weight = key.material_weight;
             var value = key.ecol_value;
-            end_value = value * weight / 1000; // переводим граммы в килограммы
+            end_value = value * weight/ 1000 ; // переводим граммы в килограммы 
             if (typeof ObjectEcos.calculated[variable] == 'undefined') {
                 ObjectEcos.calculated[variable] = [];
             }
@@ -507,6 +467,8 @@ async function calcFormula2(packid) {
                 ObjectEcos.calculated[variable][name] = 0;
             }
             ObjectEcos.calculated[variable][name] += Number(end_value);
+            
+            //console.log(name,ObjectEcos.comparativeWeight[name]); ////////////!!!
         })
     }
     //создаем переменную с критериями в удобном формате
@@ -590,6 +552,7 @@ async function calcFormula2(packid) {
 }
 //Считает сумму абсолютных значений экологических характеристик выбранных упаковок для знаменателя второй формулы
 async function calcFormula1(packid) {
+    console.log("df"); ////////////!!!
     ObjectEcos.comparativeWeight = [];
     for (let variable in packid) {
         //console.log("упаковка -",packid[variable]);
@@ -599,14 +562,18 @@ async function calcFormula1(packid) {
             var name = key.ecol_name;
             var weight = key.material_weight;
             var value = key.ecol_value;
-            end_value = value * weight / 1000; // переводим граммы в килограммы
+            end_value = value * weight / 1000; // переводим граммы в килограммы 
             //console.log("данные:",value,weight,end_value);
             if (typeof ObjectEcos.comparativeWeight[name] == 'undefined') {
                 ObjectEcos.comparativeWeight[name] = 0;
             }
             ObjectEcos.comparativeWeight[name] += Number(end_value);
+            
+            console.log(name,ObjectEcos.comparativeWeight[name]); ////////////!!!
         })
         //console.log("Добавили в структуру такую вот фигню -",ObjectEcos.comparativeWeight);   
+        // console.log("Двапро");
+       
     }
 }
 
@@ -685,6 +652,8 @@ router.get('/DBecolchar', function (req, res) {
         res.send(data);
     });
 });
+
+
 //таблица критериев ecol_charact
 router.get('/DBcriteria', function (req, res) {
     let sql = "SELECT * FROM ecol_charact"
@@ -693,6 +662,7 @@ router.get('/DBcriteria', function (req, res) {
         res.send(data);
     });
 });
+
 //таблица значений экол характеристик
 router.get('/DBecolvalue', function (req, res) {
     let sql = "SELECT * FROM ecolchar_value;"
@@ -701,6 +671,26 @@ router.get('/DBecolvalue', function (req, res) {
         res.send(data);
     });
 });
+
+//таблица стран экол характеристик
+router.get('/country', function (req, res) {
+    let sql = "SELECT * FROM country;"
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(JSON.stringify(data));
+    });
+});
+
+//года экол характеристик
+router.get('/year', function (req, res) {
+    let sql = "SELECT * FROM year;"
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(JSON.stringify(data));
+    });
+});
+
+
 
 // ---------------страны и года
 //таблица значений экол характеристик
@@ -732,7 +722,7 @@ router.get('/DBecolvalue', function (req, res) {
 
 
 // const mass1 = [];
-// //получаем значения экол харок по 1 упаковке для air
+// //получаем значения экол харак по 1 упаковке для air
 // router.get('/mass1', function (req, res) {
 //     connection.getConnection.query(`SELECT 
 //     ecol_value

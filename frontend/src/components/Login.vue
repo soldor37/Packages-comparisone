@@ -10,15 +10,15 @@
           >
             <v-card class="elevation-12">
               <v-toolbar
-                color="primary"
-                dark
+                color="green lighten-1"
+                
                 flat
               >
-                <v-toolbar-title>Authorization</v-toolbar-title>
+                <v-toolbar-title >Authorization</v-toolbar-title>
                 <v-spacer />
               </v-toolbar>
               <v-card-text>
-                <v-form>
+                <v-form >
                   <v-text-field
                     label="Login"
                     name="login"
@@ -37,7 +37,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer />
-                <v-btn color="primary" @click="submit">Login</v-btn>
+                <v-btn color="green lighten-2" @click="submit" >Login</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
@@ -64,3 +64,10 @@ export default {
     }
 }
 </script>
+
+<style> 
+body{
+    background-color: #947272; /**/
+   }
+
+ </style>

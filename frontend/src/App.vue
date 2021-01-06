@@ -1,13 +1,13 @@
 <template>
   <v-app id="inspire">
-    <v-navigation-drawer v-model="drawer" app v-if="isLoggedIn">
+    <v-navigation-drawer v-model="drawer" app v-if="isLoggedIn" color = "green lighten-5"> 
       <v-list dense>
         <v-list-item link to="/">
           <v-list-item-action>
             <v-icon>mdi-chart-bar</v-icon>
           </v-list-item-action>
           <v-list-item-title class="font-weight-medium subtitle-1"
-            >Comparisone</v-list-item-title
+            >Comparison</v-list-item-title
           >
         </v-list-item>
         <!-- показывается только обычному пользователю -->
@@ -48,19 +48,20 @@
         </v-list-group>
       </v-list>
     </v-navigation-drawer>
-    <v-app-bar app color="indigo" dark>
+
+    <v-app-bar app color="green lighten-1"> 
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title class="caption"
+      <v-toolbar-title class="caption" color = "green"
         >Software complex for selecting packaging materials by environmental
         parameters</v-toolbar-title
       >
       <v-spacer></v-spacer>
-      <v-btn class="ma-2" color="primary" to="/login" v-if="!isLoggedIn">
+      <v-btn class="ma-2" color="brown lighten-1" to="/login" v-if="!isLoggedIn">
         Login
         <v-icon>mdi-login-variant</v-icon>
       </v-btn>
 
-      <v-btn class="ma-2" color="primary" v-if="isLoggedIn" @click="logout">
+      <v-btn class="ma-2" color="brown lighten-1" v-if="isLoggedIn" @click="logout">
         Logout
         <v-icon>mdi-logout</v-icon>
       </v-btn>
@@ -75,8 +76,8 @@
         </v-row>
       </v-container>
     </v-content>
-    <v-footer color="indigo" app>
-      <span class="white--text">&copy; 2020</span>
+    <v-footer color="green lighten-1" app>
+      <span class="caption">&copy; 2020</span> <!-- было: <span class="white--text">&copy; 2020</span> -->
     </v-footer>
   </v-app>
 </template>
@@ -117,4 +118,4 @@ export default {
 };
 </script>
 
-<style></style>
+<style>  </style>
