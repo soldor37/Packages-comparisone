@@ -12,6 +12,11 @@ import VueRouter from 'vue-router'
 import VueApexCharts from 'vue-apexcharts'
 // импортируем Comparisone компонент
 import Comparisone from './components/Comparisone/Comparisone.vue'
+import ComparisoneRU from './components/Comparisone/ComparisoneRU.vue'
+import ComparisoneDE from './components/Comparisone/ComparisoneDE.vue'
+//импортируем Info компонент
+//import info from './components/info.vue'
+
 // импортируем Login компонент
 import Login from './components/Login'
 
@@ -19,6 +24,11 @@ import Login from './components/Login'
 import Package from './components/AdminPanel/Package' //для администратора
 import PackagesNoAdmin from './components/PackagesNoAdmin' //для не администратора
 import Criteria from './components/AdminPanel/Criteria'
+import infoMaterialsAdmin from './components/AdminPanel/infoMaterialsAdmin'
+import infoApplicationAdmin from './components/AdminPanel/infoApplicationAdmin'
+import infoApplicationAdminRU from './components/AdminPanel/infoApplicationAdminRU'
+import infoMaterials from './components/infoMaterials'
+import infoApplication from './components/infoApplication'
 import Material from './components/AdminPanel/Material'
 import PackGroups from './components/AdminPanel/PackGroups'
 import Users from './components/AdminPanel/Users'
@@ -80,6 +90,7 @@ const routes = [
       is_admin: true
     } 
   },
+ 
   { 
     path: '/admin/users',
     component: Users,
@@ -96,9 +107,69 @@ const routes = [
      requiresAuth: true
    } 
   },
+  { path: '/ComparisoneRU',
+   component: ComparisoneRU,
+   name: 'comparisoneRU',
+   meta: {
+     requiresAuth: true
+   } 
+  },
+  { path: '/ComparisoneDE',
+   component: ComparisoneDE,
+   name: 'comparisoneDE',
+   meta: {
+     requiresAuth: true
+   } 
+  },
   { path : '/login', component: Login },
   // otherwise redirect to home
-  { path: '*', redirect: '/' }
+  { path: '*', redirect: '/' },
+
+  { 
+    path: '/infoMaterials',
+    component: infoMaterials,
+    name: 'infoMaterials',
+    meta: { 
+      requiresAuth: true,
+      is_admin: true
+    } 
+  },
+  { 
+    path: '/infoApplication',
+    component: infoApplication,
+    name: 'infoApplication',
+    meta: { 
+      requiresAuth: true,
+      is_admin: true
+    } 
+  },
+  { 
+    path: '/admin/infoMaterialsAdmin',
+    component: infoMaterialsAdmin,
+    name: 'infoMaterialsAdmin',
+    meta: { 
+      requiresAuth: true,
+      is_admin: true
+    } 
+  },
+  { 
+    path: '/admin/infoApplicationAdmin',
+    component: infoApplicationAdmin,
+    name: 'infoApplicationAdmin',
+    meta: { 
+      requiresAuth: true,
+      is_admin: true
+    } 
+  },
+  { 
+    path: '/admin/infoApplicationAdminRU',
+    component: infoApplicationAdminRU,
+    name: 'infoApplicationAdminRU',
+    meta: { 
+      requiresAuth: true,
+      is_admin: true
+    } 
+  },
   ]
 // Создаем экземпляр роутера и передайте опцию `routes`
 const router = new VueRouter({

@@ -1,33 +1,35 @@
 <!-- Выбор страны и года -->
+
+
 <template>
   
-    <div class="territorySelection">
+  <div class="territorySelection">
     
-      <v-select
-        :items="countries"
-        item-value="id"
-        item-text="country_name"
-        v-model="pickedCountry"
-        :menu-props = "{maxHeight:'400'}"
-        label = "countries"
-        outlined
-        hint = "Select country of ecological criteries"
-        persistent-hint
-      ></v-select>
+    <v-select
+      :items="countries"
+      item-value="id"
+      item-text="value"
+      v-model="pickedCountry"
+      :menu-props = "{maxHeight:'400'}"
+      label = "countries"
+      outlined
+      hint = "Select country of ecological criteries"
+      persistent-hint
+    ></v-select>
     
     
-      <v-select
-        :items="years"
-        item-value="id"
-        item-text="year"
-        v-model="pickedYear"
-        :menu-props = "{maxHeight:'400'}"
-        label = "year"
-        outlined
-        hint = "Select year of ecological criteries"
-        persistent-hint
-      ></v-select>
-    </div>
+    <v-select
+      :items="years"
+      item-value="id"
+      item-text="value"
+      v-model="pickedYear"
+      :menu-props = "{maxHeight:'400'}"
+      label = "year"
+      outlined
+      hint = "Select year of ecological criteries"
+      persistent-hint
+    ></v-select>
+  </div>
   
 </template>
 
@@ -39,7 +41,7 @@ export default {
         myCountry:{
             type: String,
             default: 'None'
-        }
+        },
     },
   data() {
     return {
@@ -47,8 +49,8 @@ export default {
       pickedCountry: undefined,
       countries: [
         {
-          id: "id",
-          value: "country_name" ,
+          idc: "id_country",
+          valuec: "country_name" ,
         },
         {
           id: 2,
@@ -57,8 +59,8 @@ export default {
       ],
       years: [
         {
-          id: "id",
-          value: "year",
+          idy: "id_year",
+          valuey: "year",
         },
         
       ],
@@ -71,6 +73,7 @@ export default {
               axios.get(`http://${hostname}:3000/posts/country`)
               .then((resp)=>{
                   this.countries = resp.data;
+                  console.log(resp.data);
                   resolve(resp)
               })
               .catch((err)=>{
@@ -92,15 +95,16 @@ export default {
 </script>
 
 
-<!-- <script>
+ <script>
 import axios from "axios"
 export default {
     props:{
         myCountry:{
             type: String,
             default: 'None'
-        }
+        },
     },
+    
   data() {
     return {
       pickedYear: undefined,
@@ -141,6 +145,20 @@ export default {
                   console.log(err);
               })
           })
+      },
+      getYears(){
+        var hostname = window.location.hostname;
+        return new Promise((resolve, reject)=>{
+          axios.get(`http://${hostname}:3000/posts/year`)
+          .then((resp)=>{
+            this.years = resp.data;
+            resolve(resp)
+          })
+          .catch((err)=>{
+            reject(err)
+            console.log(err);
+          })
+        })
       }
   },
   watch: {
@@ -151,9 +169,13 @@ export default {
       this.$emit("updateYear", this.pickedYear);
     },
   },
+  beforeMount(){
+    this.getCountries();
+    this.getYears();
+  },
 };
 </script>
--->
+
 
 <style scoped></style>
 

@@ -1,6 +1,6 @@
 <template>
   <v-app id="inspire">
-    <v-navigation-drawer v-model="drawer" app v-if="isLoggedIn" color = "green lighten-5"> 
+    <v-navigation-drawer v-model="drawer" app v-if="isLoggedIn" color = "green lighten-5"> <!-- !!!!! почитать про v-navigation-drawer !!!!!! -->
       <v-list dense>
         <v-list-item link to="/">
           <v-list-item-action>
@@ -10,6 +10,10 @@
             >Comparison</v-list-item-title
           >
         </v-list-item>
+
+
+
+
         <!-- показывается только обычному пользователю -->
         <v-list-item link v-if="is_admin != 1" to="/packages">
           <v-list-item-action>
@@ -46,6 +50,43 @@
             <v-list-item-title>Users</v-list-item-title>
           </v-list-item>
         </v-list-group>
+
+        <v-list-group sub-group no-action v-if="is_admin == 1">
+          <template v-slot:activator>
+            <v-list-item-content>
+              <v-list-item-title>Info</v-list-item-title>
+            </v-list-item-content>
+          </template>
+          
+          
+          <v-list-item to="/admin/infoMaterialsAdmin">
+            <v-list-item-title>About Materials</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item to="/admin/infoApplicationAdmin">
+            <v-list-item-title>About this application</v-list-item-title>
+          </v-list-item>
+
+        </v-list-group>
+
+        <v-list-group sub-group no-action v-if="is_admin != 1">
+          <template v-slot:activator>
+            <v-list-item-content>
+              <v-list-item-title>Info</v-list-item-title>
+            </v-list-item-content>
+          </template>
+          
+          
+          <v-list-item to="/infoMaterials">
+            <v-list-item-title>About Materials</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item to="/infoApplication">
+            <v-list-item-title>About this application</v-list-item-title>
+          </v-list-item>
+
+        </v-list-group>
+
       </v-list>
     </v-navigation-drawer>
 
@@ -56,6 +97,8 @@
         parameters</v-toolbar-title
       >
       <v-spacer></v-spacer>
+
+    
       <v-btn class="ma-2" color="brown lighten-1" to="/login" v-if="!isLoggedIn">
         Login
         <v-icon>mdi-login-variant</v-icon>
@@ -77,7 +120,7 @@
       </v-container>
     </v-content>
     <v-footer color="green lighten-1" app>
-      <span class="caption">&copy; 2020</span> <!-- было: <span class="white--text">&copy; 2020</span> -->
+      <span class="caption">&copy; 2021</span> <!-- было: <span class="white--text">&copy; 2020</span> -->
     </v-footer>
   </v-app>
 </template>

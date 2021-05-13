@@ -1,6 +1,48 @@
 <template>
   <div id="comparisone">
     <router-view></router-view>
+
+  <v-app-bar app color="green lighten-1"> 
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+      <v-toolbar-title class="caption" color = "green"
+        >A software complex for comparing polymer films by environmental characteristics
+        </v-toolbar-title>
+      <v-spacer></v-spacer>
+
+      <table border="0">
+        <tr>
+          <th>
+            <v-list-item to="/ComparisoneRU"> <!-- русский-->
+              <v-list-item-title>RU</v-list-item-title>
+            </v-list-item> 
+          </th>
+          <th>
+            <v-list-item to="/ComparisoneDE"> <!--немецкий -->
+              <v-list-item-title>DE</v-list-item-title>
+            </v-list-item>
+          </th>
+          <td>
+            <v-list-item to="/frontend/src/components/Comparisone/Comparisone.vue">
+              <v-list-item-title>EN</v-list-item-title>
+            </v-list-item>
+          </td>
+        </tr>
+      </table>
+    
+      <v-btn class="ma-2" color="brown lighten-1" to="/login" v-if="!isLoggedIn">
+        Login
+        <v-icon>mdi-login-variant</v-icon>
+      </v-btn>
+
+      <v-btn class="ma-2" color="brown lighten-1" v-if="isLoggedIn" @click="logout">
+        Logout
+        <v-icon>mdi-logout</v-icon>
+      </v-btn>
+  </v-app-bar>
+
+
+
+
     <v-container fluid>
       <v-row>
         <v-col md="3" sm="12">
@@ -11,19 +53,21 @@
               @updateYear="pickedYear = $event"
               :myCountry = "'Belarus'"
             ></territory-selection>
-            
+
+ 
             <v-select
               v-model="selectedGroup"
-              :items="packGroups"
+              :items="packGroups" 
               item-value="packs"
               item-text="name"
               :menu-props="{ maxHeight: '400' }"
-              label="Select"
+              label="Select package group"
               outlined
-              hint="Select an existing package group"
+              hint="Select an existing package group" 
               persistent-hint
             ></v-select>
           </v-row>
+            
           <!-- выбор упаковки в группе -->
           <v-row class="pa-2">
             <v-select
@@ -32,7 +76,7 @@
               item-value="idpack"
               item-text="pack_name"
               :menu-props="{ maxHeight: '400' }"
-              label="Select"
+              label="Select package"
               multiple
               chips
               outlined
@@ -95,6 +139,7 @@
                   ></apexchart>
                 </v-card>
               </v-tab-item>
+              
               <!-- table tab -->
               <!-- МОЖНО СДЕЛАТЬ ЧЕРЕЗ DATA-ITERATORS VUETIFY -->
               <v-tab-item>
@@ -234,8 +279,9 @@ export default {
 
 
       // ----------для селектов упаковок
-      packages: [],
-      selectedPack: [],
+      packages: [], 
+
+      selectedPack: [], 
       // ------------для групп упаковок
       packGroups: [],
       selectedGroup: undefined,
@@ -614,12 +660,16 @@ export default {
           .post(`http://${hostname}:3000/posts/calc`, {
             params: {
               ID: select,
+              country: this.pickedCountry,
+              year: this.pickedYear
             },
           })
           .then((response) => {
+            console.log(response.data);
             app.chart1.series = response.data[0];
             app.forTable = response.data[1];
-            console.log(response.data[1]);
+            app.chart1.chartOptions.xaxis.categories = response.data[2];
+            app.chart2.chartOptions.xaxis.categories = response.data[2];
           })
           .catch((error) => {
             this.chart1Status = "ERROR"

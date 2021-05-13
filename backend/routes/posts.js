@@ -61,6 +61,7 @@ router.post('/login', (req, res) => {
 //             });
 //         });
 // });
+
 router.get('/users', function (req, res) {
     let sql = "SELECT * FROM users WHERE login = 'admin'";
     return new Promise(async (resolve, reject) => {
@@ -68,6 +69,7 @@ router.get('/users', function (req, res) {
         res.send(JSON.stringify(data));
     });
 });
+
 router.get('/usersAdmPanel', function (req, res) {
     let sql = "SELECT id, login, is_admin FROM users";
     return new Promise(async (resolve, reject) => {
@@ -92,6 +94,7 @@ router.post('/deleteUser', function (req, res) {
         res.send('Data insert received');
     });
 });
+
 //---------------работа с упаковками------------------
 router.get('/', function (req, res) {
     let sql = "SELECT idpack, pack_name FROM packaging";
@@ -100,8 +103,9 @@ router.get('/', function (req, res) {
         res.send(data);
     });
 });
+
 router.get('/groups', function (req, res) {
-    let sql = `SELECT 
+    let sql = `SELECT
     idpack, pack_name, fk_id_group, pack_groups.name
 FROM
     packaging
@@ -122,20 +126,32 @@ FROM
             let ret = {
                 idgroup: combo[0].fk_id_group,
                 name: combo[0].name,
-                packs: []
+                packs: [] 
             };
             combo.forEach(el => {
                 ret.packs.push({idpack:el.idpack, pack_name: el.pack_name})
             });
             return ret
         })
-
-        //console.log(groups)
         res.send(groups);
     });
 });
+
 router.get('/ecol_dict', function (req, res) {
-    let sql = `SELECT DISTINCT ecol_name, ecol_measure FROM ecol_charact;`;
+    let sql = `SELECT DISTINCT ecol_measure FROM ecol_charact;`;
+    //let sql = `SELECT DISTINCT ecol_name, ecol_measure FROM ecol_charact;`;
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(data);
+    });
+});
+
+
+///  !!!!! ЗАПРОС ecol_name
+
+router.get('/ecol_dict', function (req, res) {
+    let sql = `SELECT DISTINCT ecol_name FROM ecol_charact_name;`; ///////////////
+    //let sql = `SELECT DISTINCT ecol_name, ecol_measure FROM ecol_charact;`;
     return new Promise(async (resolve, reject) => {
         let data = await connection.find(sql);
         res.send(data);
@@ -250,6 +266,7 @@ router.post('/insertMaterial', function (req, res) {
                 ecol_dict.forEach(function (eco) {
                     //console.log(`INSERT INTO ecol_charact(ecol_name, fk_id_material, ecol_value, ecol_measure) VALUES('${eco.name}', '${lastID}','${req.body[eco.name]}','${eco.message}');`)
                     connection.find(`INSERT INTO ecolchar_value(ecol_value, fk_ecol_charact, fk_materials) VALUES('${req.body[eco.name]}','${eco.idecol}','${lastID}');`)
+                    
                 })
             })
             .then(result => {
@@ -381,13 +398,36 @@ router.post('/deleteGroup', function (req, res) {
 // ---------------------Расчеты для сравнения--------------------------
 router.post('/calc', function (req, res) {
     let packid = req.body.params.ID;
+    let country = req.body.params.country;
+    let year = req.body.params.year;
+    
+    let ecol_dict = [];
+    let ecol_charact = [];
     (async () => {
-        await calculation(packid);
-        data = [ObjectGraph, tableData]
+        await getEcolCharacters(country, year);
+        EcolCharacts.forEach(el => {
+            ecol_charact.push({
+                name: el.ecol_name,
+                measure: el.ecol_measure
+            });
+        });
+        await calculation(packid, ecol_charact);
+        EcolCharacts.forEach(el => {
+            if(TableEcolCharacts.includes(el.ecol_name)){
+                ecol_dict.push(`${el.ecol_name}, ${el.ecol_measure}`)
+            }
+        });
+        if (ecol_dict != []){
+            ecol_dict.push("Total index")
+        }
+        data = [ObjectGraph, tableData, ecol_dict]
         res.send(data);
     })();
 
 });
+
+var EcolCharacts = []
+var TableEcolCharacts = []
 
 var ObjectEcos = {
     packs: [],
@@ -408,17 +448,17 @@ var ObjectGraph = [];
 //формирование данных для таблицы на панели сравнения
 let tableData = [];
 
-async function calculation(packid) {
+async function calculation(packid, ecol_dict) {
     try {
         await calcFormula1(packid);
-        await calcFormula2(packid);
+        await calcFormula2(packid, ecol_dict);
     }
     catch (error) {
         console.log(error.message);
     }
 }
 //считает по второй формуле, создает 2 объекта с этими данными
-async function calcFormula2(packid) {
+async function calcFormula2(packid, ecol_dict) {
     ObjectEcos.calculated = [];
     ObjectGraph = [];
     tableData = [];
@@ -467,6 +507,10 @@ async function calcFormula2(packid) {
                 ObjectEcos.calculated[variable][name] = 0;
             }
             ObjectEcos.calculated[variable][name] += Number(end_value);
+
+
+            console.log("name :");
+            console.log(name);
             
             //console.log(name,ObjectEcos.comparativeWeight[name]); ////////////!!!
         })
@@ -478,55 +522,66 @@ async function calcFormula2(packid) {
         ecol_count++;
     }
     //TODO: Костыль, чтобы не брать ед. измерения из БД. Будет время- уберу
-    let ecol_dict = [
-        {
-            name: 'Energy',
-            measure: 'MJ/kg'
-        },
-        {
-            name: 'CO2',
-            measure: 'm^3/kg'
-        },
-        {
-            name: 'Water',
-            measure: 'l/kg'
-        },
-        {
-            name: 'OilConsumption',
-            measure: 'l/kg'
-        },
-        {
-            name: 'Garbage',
-            measure: 'kg'
-        },
-        {
-            name: 'WaterConsumption',
-            measure: 'l/kg'
-        },
-    ]
+    // let ecol_dict = [
+    //     {
+    //         name: 'Energy',
+    //         measure: 'MJ/kg'
+    //     },
+    //     {
+    //         name: 'CO2',
+    //         measure: 'm^3/kg'
+    //     },
+    //     {
+    //         name: 'Water',
+    //         measure: 'l/kg'
+    //     },
+    //     {
+    //         name: 'OilConsumption',
+    //         measure: 'l/kg'
+    //     },
+    //     {
+    //         name: 'Garbage',
+    //         measure: 'kg'
+    //     },
+    //     {
+    //         name: 'WaterConsumption',
+    //         measure: 'l/kg'
+    //     },
+    // ]
+
+    ecol_dict_names = []
+    ecol_dict.forEach(el => {
+        ecol_dict_names.push(el.name)
+    });
 
     for (key in ObjectEcos.calculated) {
         ObjectEcos.totalIndex[key] = 0;
         for (let name in ObjectEcos.calculated[key]) {
-            ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]);
-            ObjectEcos.totalIndex[key] = ObjectEcos.totalIndex[key] + ObjectEcos.calculated[key][name] * ObjectEcos.criteria[name];
-            if (typeof ObjectGraph[key].data == 'undefined') {
-                ObjectGraph[key].data = [];
-            }
-            ObjectGraph[key].data.push((Number(ObjectEcos.calculated[key][name])).toFixed(3));
-            //берем единицы измерения из словаря
-            let tmpmeasure = '';
-            ecol_dict.map(function(ecol){
-                if(ecol.name == name){
-                    tmpmeasure = ecol.measure
+            if(ecol_dict_names.includes(name)){
+                ObjectEcos.calculated[key][name] = Number(ObjectEcos.calculated[key][name]) / Number(ObjectEcos.comparativeWeight[name]);
+                ObjectEcos.totalIndex[key] = ObjectEcos.totalIndex[key] + ObjectEcos.calculated[key][name] * ObjectEcos.criteria[name];
+                if (typeof ObjectGraph[key].data == 'undefined') {
+                    ObjectGraph[key].data = [];
                 }
-            })
-            tmpecol = {
-                name: name,
-                measure: tmpmeasure,
-                value: (Number(ObjectEcos.calculated[key][name])).toFixed(3)
+                ObjectGraph[key].data.push((Number(ObjectEcos.calculated[key][name])).toFixed(3));
+                //берем единицы измерения из словаря
+                let tmpmeasure = '';
+                ecol_dict.map(function(ecol){
+                    if(ecol.name == name){
+                        tmpmeasure = ecol.measure
+                    }
+                })
+                TableEcolCharacts.push(name)
+                tmpecol = {
+                    name: name,
+                    measure: tmpmeasure,
+                    value: (Number(ObjectEcos.calculated[key][name])).toFixed(3)
+                }
+                if (typeof tableData[key].ecols == 'undefined') {
+                    tableData[key].ecols = [];
+                }
+                tableData[key].ecols.push(tmpecol)
             }
-            tableData[key].ecols.push(tmpecol)
         }
     }
 
@@ -552,32 +607,89 @@ async function calcFormula2(packid) {
 }
 //Считает сумму абсолютных значений экологических характеристик выбранных упаковок для знаменателя второй формулы
 async function calcFormula1(packid) {
-    console.log("df"); ////////////!!!
+    console.log("сумма абсолютных значений"); 
+    console.log(packid); 
+
     ObjectEcos.comparativeWeight = [];
     for (let variable in packid) {
-        //console.log("упаковка -",packid[variable]);
+        console.log("упаковка -",packid[variable]);
         await getWeightMaterial(packid[variable]);
         var end_value = 0;
+        console.log('!!!', ObjectEcos.weightMaterial);
         ObjectEcos.weightMaterial.forEach(function (key) {
-            var name = key.ecol_name;
+            var name = key.ecol_name; 
             var weight = key.material_weight;
             var value = key.ecol_value;
             end_value = value * weight / 1000; // переводим граммы в килограммы 
-            //console.log("данные:",value,weight,end_value);
             if (typeof ObjectEcos.comparativeWeight[name] == 'undefined') {
                 ObjectEcos.comparativeWeight[name] = 0;
             }
             ObjectEcos.comparativeWeight[name] += Number(end_value);
-            
-            console.log(name,ObjectEcos.comparativeWeight[name]); ////////////!!!
+            console.log(name); 
         })
-        //console.log("Добавили в структуру такую вот фигню -",ObjectEcos.comparativeWeight);   
-        // console.log("Двапро");
+       
        
     }
 }
 
+async function getEcolCharacters(country, year){
+    query = `
+        SELECT idecol_name, ecol_name, ecol_measure, fk_year, fk_country FROM ecol_charact_name JOIN ecol_charact ON ecol_charact.fk_ec_name = idecol_name WHERE fk_year=${year} AND fk_country=${country}
+    `
+    let conn = await connection.connect();
+    return new Promise((resolve, reject) => {
+        conn.promise().query(query)
+        .then(result => {
+            EcolCharacts = result[0];
+        })
+        .then(result => {
+            resolve(EcolCharacts);
+            conn.release();
+        })
+        .catch(function (err) {
+            console.log(err.message);
+            reject();
+        })
+    })
+}
+
 async function getWeightMaterial(idpack) {
+    let conn = await connection.connect();
+    return new Promise((resolve, reject) => {
+        //console.log("За инфой Пришла пачка -",idpack);
+        conn.promise().query(`SELECT 
+        materials.idmaterials, ecol_charact_name.ecol_name, materials.material_name, ecol_charact.ecol_criteria, ecol_charact.ecol_measure, ecol_value, material_weight.material_weight, material_weight.fk_packaging
+    FROM
+        ecolchar_value
+            JOIN
+        ecol_charact ON idecol = fk_ecol_charact
+            JOIN
+        materials ON idmaterials = fk_materials
+         JOIN
+        material_weight ON idmaterials = material_weight.fk_materials
+            JOIN
+            ecol_charact_name ON ecol_charact.fk_ec_name = ecol_charact_name.idecol_name   
+        where material_weight.fk_packaging = ${idpack}`)
+            .then(result => {
+                let newresult = []
+                newresult.push(result[0][0])
+                newresult.push(result[0][1])
+                ObjectEcos.weightMaterial = result[0];
+                console.log("1 then" + ObjectEcos.weightMaterial);
+            })
+            .then(result => {
+                console.log("resolve" + ObjectEcos.weightMaterial);
+                resolve(ObjectEcos.weightMaterial);
+                conn.release();
+            })
+            .catch(function (err) {
+                console.log(err.message);
+                reject();
+            });
+    });
+}
+
+/*async function getWeightMaterial(idpack) {
     let conn = await connection.connect();
     return new Promise((resolve, reject) => {
         //console.log("За инфой Пришла пачка -",idpack);
@@ -605,7 +717,7 @@ async function getWeightMaterial(idpack) {
                 reject();
             });
     });
-}
+}*/
 
 async function getPacks(idpack) {
     let conn = await connection.connect();
@@ -644,24 +756,35 @@ router.get('/DBweight', function (req, res) {
         res.send(data);
     });
 });
-//таблица названий экологических характеристик + критерии
-router.get('/DBecolchar', function (req, res) {
-    let sql = "SELECT idecol, ecol_measure, ecol_value, fk_materials, ecol_charact.ecol_name FROM ecolchar_value JOIN ecol_charact on fk_ecol_charact = idecol;"
+//таблица экологических характеристик + критерии
+/*router.get('/DBecolchar', function (req, res) {
+    let sql = "SELECT idecol, ecol_measure, ecol_value, fk_materials FROM ecolchar_value JOIN ecol_charact on fk_ecol_charact = idecol;"
+    //let sql = "SELECT idecol, ecol_measure, ecol_value, fk_materials, ecol_charact.ecol_name FROM ecolchar_value JOIN ecol_charact on fk_ecol_charact = idecol;"
+    return new Promise(async (resolve, reject) => {
+        let data = await connection.find(sql);
+        res.send(data);
+    });
+});*/
+
+//таблица названий экологических характеристик 
+router.get('/DBecolcharname', function (req, res) {
+    let sql = "SELECT * FROM ecol_charact_name;"
+    //let sql = "SELECT idecol_name, ecol_name FROM ecol_charact_name JOIN ecol_charact on fk_ec_name = idecol_name;"
     return new Promise(async (resolve, reject) => {
         let data = await connection.find(sql);
         res.send(data);
     });
 });
-
 
 //таблица критериев ecol_charact
 router.get('/DBcriteria', function (req, res) {
-    let sql = "SELECT * FROM ecol_charact"
+    let sql = "SELECT * FROM ecol_charact JOIN ecol_charact on fk_ecol_charact = idecol"
     return new Promise(async (resolve, reject) => {
         let data = await connection.find(sql);
         res.send(data);
     });
 });
+
 
 //таблица значений экол характеристик
 router.get('/DBecolvalue', function (req, res) {
@@ -673,20 +796,39 @@ router.get('/DBecolvalue', function (req, res) {
 });
 
 //таблица стран экол характеристик
-router.get('/country', function (req, res) {
-    let sql = "SELECT * FROM country;"
+//router.get('/country', function (req, res) {
+    
+router.get('/DBcountries', function (req, res) {
+    // let sql = "SELECT id_country, country_name FROM country JOIN country on fk_country = id_country;"
+    let sql = "SELECT id_country, country_name FROM country"
     return new Promise(async (resolve, reject) => {
         let data = await connection.find(sql);
-        res.send(JSON.stringify(data));
+        let result = [];
+        data.forEach(el => {
+            result.push({
+                id: el.id_country,
+                value: el.country_name
+            })
+        })
+        res.send(JSON.stringify(result));
+        
     });
 });
 
 //года экол характеристик
 router.get('/year', function (req, res) {
-    let sql = "SELECT * FROM year;"
+    // let sql = "SELECT * FROM year JOIN year on fk_year = id_year;"
+    let sql = "SELECT * FROM year"
     return new Promise(async (resolve, reject) => {
         let data = await connection.find(sql);
-        res.send(JSON.stringify(data));
+        let result = [];
+        data.forEach(el => {
+            result.push({
+                id: el.id_year,
+                value: el.year
+            })
+        });
+        res.send(JSON.stringify(result));
     });
 });
 
